@@ -1,18 +1,22 @@
 from flask import Flask
 from flask import request   # wird benötigt, um die HTTP-Parameter abzufragen
 from flask import jsonify   # übersetzt python-dicts in json
-import incoming
+from marshmallow import Schema, fields
+import marshmallow
+class reserve_table_schema(Schema):
+    datetime = fields.Str(required=True)
+    duration = fields.Int(required=True)
 
-app = flask.Flask(__name__)
+app = Flask(__name__)
 app.config["DEBUG"] = True  # Zeigt Fehlerinformationen im Browser, statt nur einer generischen Error-Message
 
 @app.route('/ReserveTable', methods=['POST'])
 def reserve_table():
-    res_table = reserve_table()
+    schema = reserve_table_schema()
     
     try:
-        data = res_table.load(request.json)
-    except ValueError as e:
+        data = schema.load(request.json)
+    except marshmallow.ValidationError as e:
         return jsonify(e.messages), 400
 
     return jsonify({"message": "Table reserved successfully!"}), 201
@@ -28,5 +32,8 @@ def cancel_reservation():
 @app.route('/AllReservations', methods=['GET'])
 def all_reservations():
     return "<h1>Reservierung stornieren</h1>"
+
+
+
 
 app.run()
