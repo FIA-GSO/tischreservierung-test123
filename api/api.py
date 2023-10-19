@@ -66,13 +66,14 @@ def reserve_table():
 
 @app.route('/FreeTables', methods=['GET'])
 def free_tables():
-    print("hello")
     schema = free_table_schema()
     try:
         data = schema.load(request.json)
         timestamp = data['timestamp']
+        print(timestamp)
         date, time = timestamp.split(" ")
         hh, mm, _ = time.split(":")
+        print(hh, mm)
         if int(mm) > 30:
             hh = int(hh) + 1
             mm = "00"
