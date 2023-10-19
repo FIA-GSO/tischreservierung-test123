@@ -32,7 +32,7 @@ def reserve_table():
     
     try:
         data = schema.load(request.json)
-        con = sqlite3.connect("../DB/buchungssystem.sqlite")
+        con = sqlite3.connect("DB/buchungssystem.sqlite")
 
         cursor = con.cursor()
 
@@ -80,7 +80,8 @@ def cancel_reservation():
     
     try:
         data = schema.load(request.json)
-        con = sqlite3.connect("../DB/buchungssystem.sqlite")
+        
+        con = sqlite3.connect("DB/buchungssystem.sqlite")
 
         cursor = con.cursor()
         query = "SELECT * FROM reservierungen"
