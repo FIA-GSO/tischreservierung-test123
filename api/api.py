@@ -1,4 +1,4 @@
-from flask import flask
+from flask import Flask
 from flask import request   # wird benötigt, um die HTTP-Parameter abzufragen
 from flask import jsonify   # übersetzt python-dicts in json
 from marshmallow import Schema, fields
@@ -86,20 +86,18 @@ def cancel_reservation():
     try:
         data = schema.load(request.json)
         reservation_number = data['reservation_number']
+        print(reservation_number)
         pin = data['pin']
+        print(pin)
         con = sqlite3.connect("DB/buchungssystem.sqlite")
 
         cursor = con.cursor()
-        query = "SELECT * FROM reservierungen WHERE reservierungsnummer = " + reservation_number
+        query = f"SELECT * FROM reservierungen WHERE reservierungsnummer = {reservation_number}"
+
+        success = False
         for row in cursor.execute(query):
-            print(row)
-
-      
-
-        cursor.execute(query)
-        result = cursor.fetchall()
-
-        print(result)
+            if(row[3] == pin) :
+                success = True   
 
         con.close()
 
@@ -109,7 +107,7 @@ def cancel_reservation():
 
     except marshmallow.ValidationError as e:
         return jsonify(e.messages), 400
-
+    if(success == False): return jsonify({"message": "Cancellation not successful! Reservation number or pin not correct."}), 400
     return jsonify({"message": "Cancellation successfully!"}), 201
 
 
