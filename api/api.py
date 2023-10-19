@@ -32,6 +32,9 @@ class cancel_reservation_schema(Schema):
     reservation_number = fields.Int(required=True)
     pin = fields.Str(required=True)
 
+class free_table_schema(Schema):
+    timestamp = fields.Str(required=True)
+
 app = Flask(__name__)
 app.config["DEBUG"] = True  # Zeigt Fehlerinformationen im Browser, statt nur einer generischen Error-Message
 
@@ -77,7 +80,28 @@ def reserve_table():
 
 @app.route('/FreeTables', methods=['GET'])
 def free_tables():
-    return "<h1>Freie Plaetze</h1>"
+    schema = free_table_schema()
+    try:
+        data = schema.load(request.json)
+        timestamp = data['timestamp']
+        print(timestamp)
+        date, time = timestamp.split(" ")
+        hh, mm, _ = time.split(":")
+        print(hh, mm)
+        if int(mm) > 30:
+            hh = int(hh) + 1
+            mm = "00"
+        elif 0 < int(mm) <= 30:
+            mm = "30"
+        timestamp = f"{date} {hh%24:02d}:{mm}:00"
+        conn = sqlite3.connect('./DB/buchungssystem.sqlite')
+        cur = conn.cursor()
+        query = f"""SELECT * FROM reservierungen 
+        WHERE zeitpunkt LIKE '{timestamp}'"""
+        all_bookings = cur.execute(query).fetchall()
+    except marshmallow.ValidationError as e:
+        return jsonify(e.messages), 400
+    return all_bookings
 
 
 
@@ -94,20 +118,20 @@ def cancel_reservation():
     
     try:
         data = schema.load(request.json)
-        
+        reservation_number = data['reservation_number']
+        print(f"resrvation_number: {reservation_number}")
+        pin = data['pin']
+        print(f"PIN: {pin}")
         con = sqlite3.connect("DB/buchungssystem.sqlite")
 
         cursor = con.cursor()
-        query = "SELECT * FROM reservierungen"
+        query = f"SELECT * FROM reservierungen WHERE reservierungsnummer = {reservation_number}"
+
+        success = False
         for row in cursor.execute(query):
             print(row)
-
-      
-
-        cursor.execute(query)
-        result = cursor.fetchall()
-
-        print(result)
+            if(str(row[3]) == pin) :
+                success = True
 
         con.close()
 
@@ -117,7 +141,7 @@ def cancel_reservation():
 
     except marshmallow.ValidationError as e:
         return jsonify(e.messages), 400
-
+    if(success == False): return jsonify({"message": "Cancellation not successful! Reservation number or pin not correct."}), 400
     return jsonify({"message": "Cancellation successfully!"}), 201
 
 
