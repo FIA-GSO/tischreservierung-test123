@@ -86,9 +86,9 @@ def cancel_reservation():
     try:
         data = schema.load(request.json)
         reservation_number = data['reservation_number']
-        print(reservation_number)
+        print(f"resrvation_number: {reservation_number}")
         pin = data['pin']
-        print(pin)
+        print(f"PIN: {pin}")
         con = sqlite3.connect("DB/buchungssystem.sqlite")
 
         cursor = con.cursor()
@@ -96,8 +96,9 @@ def cancel_reservation():
 
         success = False
         for row in cursor.execute(query):
-            if(row[3] == pin) :
-                success = True   
+            print(row)
+            if(str(row[3]) == pin) :
+                success = True
 
         con.close()
 
