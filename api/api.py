@@ -1,19 +1,32 @@
 from flask import Flask
 from flask import request   # wird benötigt, um die HTTP-Parameter abzufragen
 from flask import jsonify   # übersetzt python-dicts in json
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, post_load
 import marshmallow
 import sqlite3
+import random
 
 
-
+class ReserveRequest:
+    def __init__(self, tablenumber, number_of_guests, datetime, duration):
+            self.tablenumber = tablenumber
+            self.number_of_guests = number_of_guests
+            self.datetime = datetime
+            self.duration = duration
+    
+    def __repr__(self):
+        return f"{self.tablenumber}, {self.number_of_guests}, {self.datetime}, {self.duration}"
 
 # SCHEMAS
-class reserve_table_schema(Schema):
+class ReserveSchema(Schema):
     tablenumber = fields.Int(required=True)
     number_of_guests = fields.Int(required=True)
     datetime = fields.Str(required=True)
     duration = fields.Int(required=True)
+
+    @post_load
+    def create_reserve_request(self, data, **kwargs):
+            return ReserveRequest(**data)
 
 class cancel_reservation_schema(Schema):
     reservation_number = fields.Int(required=True)
@@ -28,16 +41,17 @@ app.config["DEBUG"] = True  # Zeigt Fehlerinformationen im Browser, statt nur ei
 
 @app.route('/ReserveTable', methods=['POST'])
 def reserve_table():
-    schema = reserve_table_schema()
-    
+    pin = random.randint(1111, 9999)
     try:
-        data = schema.load(request.json)
+        data = ReserveSchema().load(request.json)
         con = sqlite3.connect("DB/buchungssystem.sqlite")
 
         cursor = con.cursor()
 
-        query = "SELECT * FROM reservierungen"
-
+        query = f"""INSERT INTO reservierungen(zeitpunkt, tischnummer, pin, storniert)
+            VALUES ({data.datetime}, {data.tablenumber}, {pin}, 0)
+        """
+        print(query)
         res = cursor.execute(query)
 
         result = res.fetchall()
