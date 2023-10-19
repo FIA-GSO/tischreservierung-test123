@@ -3,6 +3,7 @@ from flask import request   # wird benötigt, um die HTTP-Parameter abzufragen
 from flask import jsonify   # übersetzt python-dicts in json
 from marshmallow import Schema, fields
 import marshmallow
+import sqlite3
 
 class reserve_table_schema(Schema):
     tablenumber = fields.Int(required=True)
@@ -27,6 +28,14 @@ def reserve_table():
     
     try:
         data = schema.load(request.json)
+        con = sqlite3.connect("./DB/buchungssystem.sqlite")
+
+        cursor = con.cursor()
+
+        query = ""
+
+        cursor.execute(query)
+
     except marshmallow.ValidationError as e:
         return jsonify(e.messages), 400
 
