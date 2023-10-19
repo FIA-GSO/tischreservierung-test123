@@ -32,18 +32,23 @@ def reserve_table():
     
     try:
         data = schema.load(request.json)
-        con = sqlite3.connect("./DB/buchungssystem.sqlite")
+        con = sqlite3.connect("DB/buchungssystem.sqlite")
 
         cursor = con.cursor()
 
-        query = ""
+        query = "SELECT * FROM reservierungen"
 
-        cursor.execute(query)
+        res = cursor.execute(query)
+
+        result = res.fetchall()
+        con.commit()
+        con.close()
+        
 
     except marshmallow.ValidationError as e:
         return jsonify(e.messages), 400
 
-    return jsonify({"message": "Table reserved successfully!"}), 201
+    return result, 201
 
 
 
