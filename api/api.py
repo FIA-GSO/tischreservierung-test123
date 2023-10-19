@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import flask
 from flask import request   # wird benötigt, um die HTTP-Parameter abzufragen
 from flask import jsonify   # übersetzt python-dicts in json
 from marshmallow import Schema, fields
@@ -80,11 +80,12 @@ def cancel_reservation():
     
     try:
         data = schema.load(request.json)
-        
+        reservation_number = data['reservation_number']
+        pin = data['pin']
         con = sqlite3.connect("DB/buchungssystem.sqlite")
 
         cursor = con.cursor()
-        query = "SELECT * FROM reservierungen"
+        query = "SELECT * FROM reservierungen WHERE reservierungsnummer = " + reservation_number
         for row in cursor.execute(query):
             print(row)
 
