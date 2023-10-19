@@ -19,6 +19,9 @@ class cancel_reservation_schema(Schema):
     reservation_number = fields.Int(required=True)
     pin = fields.Str(required=True)
 
+class free_table_schema(Schema):
+    timestamp = fields.Str(required=True)
+
 app = Flask(__name__)
 app.config["DEBUG"] = True  # Zeigt Fehlerinformationen im Browser, statt nur einer generischen Error-Message
 
@@ -63,13 +66,28 @@ def reserve_table():
 
 @app.route('/FreeTables', methods=['GET'])
 def free_tables():
-    if 'timestamp' in request.args:
-        timestamp = request.args['timestamp']
-    conn = sqlite3.connect('./DB/buchungssystem.sqlite')
-    cur = conn.cursor()
-    query = f"SELECT * FROM reservierungen WHERE zeitpunkt LIKE {timestamp}"
-    all_bookings = cur.execute(query).fetchall()
-    return jsonify(all_bookings)
+    print("hello")
+    schema = free_table_schema()
+    try:
+        data = schema.load(request.json)
+        timestamp = data['timestamp']
+        date, time = timestamp.split(" ")
+        hh, mm, _ = time.split(":")
+        if int(mm) > 30:
+            hh = int(hh) + 1
+            mm = "00"
+        elif 0 < int(mm) <= 30:
+            mm = "30"
+        timestamp = f"{date} {hh%24:02d}:{mm}:00"
+        conn = sqlite3.connect('./DB/buchungssystem.sqlite')
+        cur = conn.cursor()
+        query = f"""SELECT * FROM reservierungen 
+        WHERE zeitpunkt LIKE '{timestamp}'"""
+        all_bookings = cur.execute(query).fetchall()
+    except marshmallow.ValidationError as e:
+        return jsonify(e.messages), 400
+    return all_bookings
+
 
 
 
