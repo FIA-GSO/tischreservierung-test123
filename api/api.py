@@ -16,7 +16,7 @@ class reserve_table_schema(Schema):
     duration = fields.Int(required=True)
 
 class cancel_reservation_schema(Schema):
-    reservation_number = fields.Str(required=True)
+    reservation_number = fields.Int(required=True)
     pin = fields.Str(required=True)
 
 app = Flask(__name__)
@@ -32,7 +32,7 @@ def reserve_table():
     
     try:
         data = schema.load(request.json)
-        con = sqlite3.connect("./DB/buchungssystem.sqlite")
+        con = sqlite3.connect("DB/buchungssystem.sqlite")
 
         cursor = con.cursor()
 
@@ -69,12 +69,32 @@ def free_tables():
 
 
 
-@app.route('/CancelReservation', methods=['PUT'])
+@app.route('/CancelReservation', methods=['PATCH'])
 def cancel_reservation():
     schema = cancel_reservation_schema()
     
     try:
         data = schema.load(request.json)
+        con = sqlite3.connect("DB/buchungssystem.sqlite")
+
+        cursor = con.cursor()
+
+        for row in cursor.execute("SELECT * FROM reservierungen"):
+            print(row)
+
+        query = "SELECT * FROM reservierungen"
+
+        cursor.execute(query)
+        result = cursor.fetchall()
+
+        print(result)
+
+        con.close()
+
+
+
+
+
     except marshmallow.ValidationError as e:
         return jsonify(e.messages), 400
 
