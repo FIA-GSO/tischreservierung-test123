@@ -5,6 +5,10 @@ from marshmallow import Schema, fields
 import marshmallow
 import sqlite3
 
+
+
+
+# SCHEMAS
 class reserve_table_schema(Schema):
     tablenumber = fields.Int(required=True)
     number_of_guests = fields.Int(required=True)
@@ -20,7 +24,7 @@ app.config["DEBUG"] = True  # Zeigt Fehlerinformationen im Browser, statt nur ei
 
 
 
-
+# ENDPOINTS
 
 @app.route('/ReserveTable', methods=['POST'])
 def reserve_table():
@@ -74,7 +78,7 @@ def cancel_reservation():
     except marshmallow.ValidationError as e:
         return jsonify(e.messages), 400
 
-    return jsonify({"message": "Table reserved successfully!"}), 201
+    return jsonify({"message": "Cancellation successfully!"}), 201
 
 
 
