@@ -45,20 +45,19 @@ class CancelSchema(Schema):
             return CancelRequest(**data)
 
 class FreeTables:
-    def format_timestamp(timestamp):
+    def format_timestamp(self, timestamp) -> str:
         date, time = timestamp.split(" ")
         hh, mm, _ = time.split(":")
-        print(hh, mm)
         if int(mm) > 30:
             hh = int(hh) + 1
             mm = "00"
-        elif 0 < int(mm) <= 30:
+        elif int(mm) != 0:
             mm = "30"
 
         return f"{date} {hh%24:02d}:{mm}:00"
     
     def __init__(self, timestamp):
-        self.timestmap = self.format_timestamp(timestamp)
+        self.timestamp = self.format_timestamp(timestamp)
     
     
     def __repr__(self) -> str:
@@ -66,10 +65,11 @@ class FreeTables:
     
 class FreeTablesSchema(Schema):
      timestamp = fields.Str(required=True)
-     
+
      @post_load
      def create_freetables_schema(self, data, **kwargs):
-            return FreeTablesSchema(**data)
+        return FreeTables(**data)
+
 
 app = Flask(__name__)
 app.config["DEBUG"] = True  # Zeigt Fehlerinformationen im Browser, statt nur einer generischen Error-Message
@@ -106,7 +106,8 @@ def reserve_table():
 @app.route('/FreeTables', methods=['GET'])
 def free_tables():
     try:
-        data = FreeTablesSchema().load(request.json)
+        data = FreeTablesSchema().load(request.args.to_dict())
+        print(data)
         timestamp = data.timestamp
         conn = sqlite3.connect('./DB/buchungssystem.sqlite')
         cur = conn.cursor()
