@@ -117,9 +117,8 @@ def reserve_table():
 
         cursor = con.cursor()
 
-        query = f"""INSERT INTO reservierungen(zeitpunkt, tischnummer, pin, storniert)
-            VALUES ({data.datetime}, {data.tablenumber}, {pin}, 0)
-        """
+        query = f"INSERT INTO reservierungen(zeitpunkt, tischnummer, pin, storniert) VALUES ({data.datetime}, {data.tablenumber}, {pin}, 0)"
+        
         print(query)
         res = cursor.execute(query)
 
