@@ -4,12 +4,24 @@ from flask import request   # wird benötigt, um die HTTP-Parameter abzufragen
 from flask import jsonify   # übersetzt python-dicts in json
 from flask import render_template
 from marshmallow import Schema, fields
+from marshmallow import Schema, fields, post_load
 import marshmallow
 import sqlite3
+import random
 
+
+class ReserveRequest:
+    def __init__(self, tablenumber, number_of_guests, datetime, duration):
+            self.tablenumber = tablenumber
+            self.number_of_guests = number_of_guests
+            self.datetime = datetime
+            self.duration = duration
+    
+    def __repr__(self):
+        return f"{self.tablenumber}, {self.number_of_guests}, {self.datetime}, {self.duration}"
 
 # SCHEMAS
-class reserve_table_schema(Schema):
+class ReserveSchema(Schema):
     tablenumber = fields.Int(required=True)
     number_of_guests = fields.Int(required=True)
     datetime = fields.Str(required=True)
@@ -21,10 +33,17 @@ class comment_schema(Schema):
     comment = fields.Str(required=True)
 
 
+    @post_load
+    def create_reserve_request(self, data, **kwargs):
+            return ReserveRequest(**data)
+
 class cancel_reservation_schema(Schema):
     reservation_number = fields.Int(required=True)
     pin = fields.Str(required=True)
 
+
+class free_table_schema(Schema):
+    timestamp = fields.Str(required=True)
 
 app = Flask(__name__)
 # Zeigt Fehlerinformationen im Browser, statt nur einer generischen Error-Message
@@ -91,14 +110,17 @@ def PostComment():
 def reserve_table():
     schema = reserve_table_schema()
 
+    pin = random.randint(1111, 9999)
     try:
-        data = schema.load(request.json)
+        data = ReserveSchema().load(request.json)
         con = sqlite3.connect("DB/buchungssystem.sqlite")
 
         cursor = con.cursor()
 
-        query = "SELECT * FROM reservierungen"
-
+        query = f"""INSERT INTO reservierungen(zeitpunkt, tischnummer, pin, storniert)
+            VALUES ({data.datetime}, {data.tablenumber}, {pin}, 0)
+        """
+        print(query)
         res = cursor.execute(query)
 
         result = res.fetchall()
@@ -113,13 +135,29 @@ def reserve_table():
 
 @app.route('/FreeTables', methods=['GET'])
 def free_tables():
-    if 'timestamp' in request.args:
-        timestamp = request.args['timestamp']
-    conn = sqlite3.connect('./DB/buchungssystem.sqlite')
-    cur = conn.cursor()
-    query = f"SELECT * FROM reservierungen WHERE zeitpunkt LIKE {timestamp}"
-    all_bookings = cur.execute(query).fetchall()
-    return jsonify(all_bookings)
+    schema = free_table_schema()
+    try:
+        data = schema.load(request.json)
+        timestamp = data['timestamp']
+        print(timestamp)
+        date, time = timestamp.split(" ")
+        hh, mm, _ = time.split(":")
+        print(hh, mm)
+        if int(mm) > 30:
+            hh = int(hh) + 1
+            mm = "00"
+        elif 0 < int(mm) <= 30:
+            mm = "30"
+        timestamp = f"{date} {hh%24:02d}:{mm}:00"
+        conn = sqlite3.connect('./DB/buchungssystem.sqlite')
+        cur = conn.cursor()
+        query = f"""SELECT * FROM reservierungen 
+        WHERE zeitpunkt LIKE '{timestamp}'"""
+        all_bookings = cur.execute(query).fetchall()
+    except marshmallow.ValidationError as e:
+        return jsonify(e.messages), 400
+    return all_bookings
+
 
 
 @app.route('/CancelReservation', methods=['PATCH'])
