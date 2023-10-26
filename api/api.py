@@ -71,14 +71,14 @@ class FreeTables:
     
     
     def __repr__(self) -> str:
-         return f'{self.timestamp}'
+        return f'{self.timestamp}'
     
 class FreeTablesSchema(Schema):
-     timestamp = fields.Str(required=True)
+    timestamp = fields.Str(required=True)
      
-     @post_load
-     def create_freetables_schema(self, data, **kwargs):
-            return FreeTablesSchema(**data)
+    @post_load
+    def create_freetables_schema(self, data, **kwargs):
+        return FreeTablesSchema(**data)
 
 app = Flask(__name__)
 app.config["DEBUG"] = True  # Zeigt Fehlerinformationen im Browser, statt nur einer generischen Error-Message
