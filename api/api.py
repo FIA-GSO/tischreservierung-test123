@@ -27,8 +27,6 @@ class ReserveSchema(Schema):
     datetime = fields.Str(required=True)
     duration = fields.Int(required=True)
 
-
-class comment_schema(Schema):
     username = fields.Str(required=True)
     comment = fields.Str(required=True)
 
@@ -84,64 +82,29 @@ app = Flask(__name__)
 app.config["DEBUG"] = True  # Zeigt Fehlerinformationen im Browser, statt nur einer generischen Error-Message
 
 # ENDPOINTS
-
-@app.route('/')
-def home():
-    con = sqlite3.connect("DB/buchungssystem.sqlite")
-
-    cursor = con.cursor()
-
-    query = "SELECT * FROM comments;"
-
-    res = cursor.execute(query)
-
-    rows = res.fetchall()
-    res = [
-        {
-            'name': row[0],
-            'text': row[1],
-            'time': row[2]
-        } for row in rows
-    ]
-    print(res)
-
-    con.close()
-
-    return render_template('index.html', comments=res)
-
-
-@app.route('/PostComment', methods=['POST'])
-def PostComment():
-    schema = comment_schema()
-
+@app.route('/ReserveTable', methods=['POST'])
+def reserve_table():
+    pin = random.randint(1111, 9999)
     try:
-        data = schema.load(request.json)
-        username = data['username']
-        comment = data['comment']
+        data = ReserveSchema().load(request.json)
         con = sqlite3.connect("DB/buchungssystem.sqlite")
 
         cursor = con.cursor()
 
-        dt = str(datetime.datetime.now())
-        query = f"INSERT INTO comments VALUES('{username}','{comment}','{dt}');"
+        query = f"INSERT INTO reservierungen(zeitpunkt, tischnummer, pin, storniert) VALUES ({data.datetime}, {data.tablenumber}, {pin}, 0)"
+        
         print(query)
-
         res = cursor.execute(query)
 
         result = res.fetchall()
         con.commit()
         con.close()
-        home()
 
     except marshmallow.ValidationError as e:
         return jsonify(e.messages), 400
 
     return result, 201
 
-
-@app.route('/ReserveTable', methods=['POST'])
-def reserve_table():
-    schema = reserve_table_schema()
 
 @app.route('/FreeTables', methods=['GET'])
 def free_tables():
@@ -160,10 +123,9 @@ def free_tables():
 
 @app.route('/CancelReservation', methods=['PATCH'])
 def cancel_reservation():
-    
     try:
         data = CancelSchema().load(request.json)
-        reservation_number = data.reservaiton_number
+        reservation_number = data['reservation_number']
         print(f"resrvation_number: {reservation_number}")
         pin = data['pin']
         print(f"PIN: {pin}")
@@ -182,6 +144,7 @@ def cancel_reservation():
 
     except marshmallow.ValidationError as e:
         return jsonify(e.messages), 400
+    
     if(success == False):
         return jsonify({"message": "Cancellation not successful! Reservation number or pin not correct."}), 400
     return jsonify({"message": "Cancellation successfully!"}), 201
