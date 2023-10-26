@@ -78,7 +78,7 @@ class FreeTablesSchema(Schema):
 
     @post_load
     def create_freetables_schema(self, data, **kwargs):
-        return FreeTablesSchema(**data)
+        return FreeTables(**data)
 
 
 app = Flask(__name__)
