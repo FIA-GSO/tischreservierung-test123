@@ -1,4 +1,5 @@
 import datetime
+import random
 import sqlite3
 
 import marshmallow
@@ -75,10 +76,9 @@ class FreeTables:
 class FreeTablesSchema(Schema):
     timestamp = fields.Str(required=True)
 
-
-@post_load
-def create_freetables_schema(self, data, **kwargs):
-    return FreeTablesSchema(**data)
+    @post_load
+    def create_freetables_schema(self, data, **kwargs):
+        return FreeTablesSchema(**data)
 
 
 app = Flask(__name__)
