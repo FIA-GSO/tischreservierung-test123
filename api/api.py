@@ -27,18 +27,52 @@ class ReserveSchema(Schema):
     @post_load
     def create_reserve_request(self, data, **kwargs):
             return ReserveRequest(**data)
+    
+class CancelRequest:
+    def __init__(self, reservation_number, pin):
+            self.reservation_number = reservation_number
+            self.pin = pin
+    
+    def __repr__(self):
+        return f"{self.reservation_number}, {self.pin}"
 
-class cancel_reservation_schema(Schema):
+class CancelSchema(Schema):
     reservation_number = fields.Int(required=True)
     pin = fields.Str(required=True)
 
-class free_table_schema(Schema):
-    timestamp = fields.Str(required=True)
+    @post_load
+    def create_reserve_request(self, data, **kwargs):
+            return CancelRequest(**data)
+
+class FreeTables:
+    def format_timestamp(timestamp):
+        date, time = timestamp.split(" ")
+        hh, mm, _ = time.split(":")
+        print(hh, mm)
+        if int(mm) > 30:
+            hh = int(hh) + 1
+            mm = "00"
+        elif 0 < int(mm) <= 30:
+            mm = "30"
+
+        return f"{date} {hh%24:02d}:{mm}:00"
+    
+    def __init__(self, timestamp):
+        self.timestmap = self.format_timestamp(timestamp)
+    
+    
+    def __repr__(self) -> str:
+         return f'{self.timestamp}'
+    
+class FreeTablesSchema(Schema):
+     timestamp = fields.Str(required=True)
+     
+     @post_load
+     def create_freetables_schema(self, data, **kwargs):
+            return FreeTablesSchema(**data)
 
 app = Flask(__name__)
 app.config["DEBUG"] = True  # Zeigt Fehlerinformationen im Browser, statt nur einer generischen Error-Message
-
-
 
 # ENDPOINTS
 
@@ -69,31 +103,11 @@ def reserve_table():
 
 
 
-
-
-
-
-
-
-
-
-
 @app.route('/FreeTables', methods=['GET'])
 def free_tables():
-    schema = free_table_schema()
     try:
-        data = schema.load(request.json)
-        timestamp = data['timestamp']
-        print(timestamp)
-        date, time = timestamp.split(" ")
-        hh, mm, _ = time.split(":")
-        print(hh, mm)
-        if int(mm) > 30:
-            hh = int(hh) + 1
-            mm = "00"
-        elif 0 < int(mm) <= 30:
-            mm = "30"
-        timestamp = f"{date} {hh%24:02d}:{mm}:00"
+        data = FreeTablesSchema().load(request.json)
+        timestamp = data.timestamp
         conn = sqlite3.connect('./DB/buchungssystem.sqlite')
         cur = conn.cursor()
         query = f"""SELECT * FROM reservierungen 
@@ -114,11 +128,10 @@ def free_tables():
 
 @app.route('/CancelReservation', methods=['PATCH'])
 def cancel_reservation():
-    schema = cancel_reservation_schema()
     
     try:
-        data = schema.load(request.json)
-        reservation_number = data['reservation_number']
+        data = CancelSchema().load(request.json)
+        reservation_number = data.reservaiton_number
         print(f"resrvation_number: {reservation_number}")
         pin = data['pin']
         print(f"PIN: {pin}")
@@ -143,9 +156,6 @@ def cancel_reservation():
         return jsonify(e.messages), 400
     if(success == False): return jsonify({"message": "Cancellation not successful! Reservation number or pin not correct."}), 400
     return jsonify({"message": "Cancellation successfully!"}), 201
-
-
-
 
 
 
