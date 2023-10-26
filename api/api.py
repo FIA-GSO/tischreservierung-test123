@@ -1,24 +1,24 @@
 import datetime
-from flask import Flask
-from flask import request   # wird benötigt, um die HTTP-Parameter abzufragen
-from flask import jsonify   # übersetzt python-dicts in json
-from flask import render_template
-from marshmallow import Schema, fields
-from marshmallow import Schema, fields, post_load
-import marshmallow
 import sqlite3
-import random
+
+import marshmallow
+from flask import Flask
+from flask import jsonify  # übersetzt python-dicts in json
+from flask import render_template
+from flask import request  # wird benötigt, um die HTTP-Parameter abzufragen
+from marshmallow import Schema, fields, post_load
 
 
 class ReserveRequest:
     def __init__(self, tablenumber, number_of_guests, datetime, duration):
-            self.tablenumber = tablenumber
-            self.number_of_guests = number_of_guests
-            self.datetime = datetime
-            self.duration = duration
-    
+        self.tablenumber = tablenumber
+        self.number_of_guests = number_of_guests
+        self.datetime = datetime
+        self.duration = duration
+
     def __repr__(self):
         return f"{self.tablenumber}, {self.number_of_guests}, {self.datetime}, {self.duration}"
+
 
 # SCHEMAS
 class ReserveSchema(Schema):
@@ -32,18 +32,19 @@ class comment_schema(Schema):
     username = fields.Str(required=True)
     comment = fields.Str(required=True)
 
-
     @post_load
     def create_reserve_request(self, data, **kwargs):
-            return ReserveRequest(**data)
-    
+        return ReserveRequest(**data)
+
+
 class CancelRequest:
     def __init__(self, reservation_number, pin):
-            self.reservation_number = reservation_number
-            self.pin = pin
-    
+        self.reservation_number = reservation_number
+        self.pin = pin
+
     def __repr__(self):
         return f"{self.reservation_number}, {self.pin}"
+
 
 class CancelSchema(Schema):
     reservation_number = fields.Int(required=True)
@@ -51,7 +52,8 @@ class CancelSchema(Schema):
 
     @post_load
     def create_reserve_request(self, data, **kwargs):
-            return CancelRequest(**data)
+        return CancelRequest(**data)
+
 
 class FreeTables:
     def format_timestamp(self, timestamp) -> str:
@@ -63,30 +65,27 @@ class FreeTables:
         elif int(mm) != 0:
             mm = "30"
 
-        return f"{date} {hh%24:02d}:{mm}:00"
-    
+        return f"{date} {hh % 24:02d}:{mm}:00"
+
     def __init__(self, timestamp):
         self.timestamp = self.format_timestamp(timestamp)
-    
-    
+
     def __repr__(self) -> str:
         return f'{self.timestamp}'
-    
+
+
 class FreeTablesSchema(Schema):
-     timestamp = fields.Str(required=True)
-
-     @post_load
-     def create_freetables_schema(self, data, **kwargs):
-        return FreeTables(**data)
-
     timestamp = fields.Str(required=True)
-     
-    @post_load
-    def create_freetables_schema(self, data, **kwargs):
-        return FreeTablesSchema(**data)
+
+
+@post_load
+def create_freetables_schema(self, data, **kwargs):
+    return FreeTablesSchema(**data)
+
 
 app = Flask(__name__)
 app.config["DEBUG"] = True  # Zeigt Fehlerinformationen im Browser, statt nur einer generischen Error-Message
+
 
 # ENDPOINTS
 
@@ -101,13 +100,7 @@ def home():
     res = cursor.execute(query)
 
     rows = res.fetchall()
-    res = [
-        {
-            'name': row[0],
-            'text': row[1],
-            'time': row[2]
-        } for row in rows
-    ]
+    res = [{'name': row[0], 'text': row[1], 'time': row[2]} for row in rows]
     print(res)
 
     con.close()
@@ -146,7 +139,9 @@ def PostComment():
 
 @app.route('/ReserveTable', methods=['POST'])
 def reserve_table():
-    schema = reserve_table_schema()
+    #schema = reserve_table_schema()
+    pass
+
 
 @app.route('/FreeTables', methods=['GET'])
 def free_tables():
@@ -163,10 +158,8 @@ def free_tables():
     return all_bookings
 
 
-
 @app.route('/CancelReservation', methods=['PATCH'])
 def cancel_reservation():
-    
     try:
         data = CancelSchema().load(request.json)
         reservation_number = data.reservaiton_number
@@ -181,18 +174,16 @@ def cancel_reservation():
         success = False
         for row in cursor.execute(query):
             print(row)
-            if(str(row[3]) == pin):
+            if (str(row[3]) == pin):
                 success = True
 
         con.close()
 
     except marshmallow.ValidationError as e:
         return jsonify(e.messages), 400
-    if(success == False):
+    if (success == False):
         return jsonify({"message": "Cancellation not successful! Reservation number or pin not correct."}), 400
     return jsonify({"message": "Cancellation successfully!"}), 201
-
-
 
 
 @app.route('/AllReservations', methods=['GET'])
