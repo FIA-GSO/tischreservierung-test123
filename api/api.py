@@ -150,8 +150,7 @@ def free_tables():
         timestamp = data.timestamp
         conn = sqlite3.connect('./DB/buchungssystem.sqlite')
         cur = conn.cursor()
-        query = f"""SELECT * FROM reservierungen 
-        WHERE zeitpunkt LIKE '{timestamp}'"""
+        query = f"SELECT * FROM reservierungen WHERE zeitpunkt LIKE '{timestamp}'"
         all_bookings = cur.execute(query).fetchall()
     except marshmallow.ValidationError as e:
         return jsonify(e.messages), 400
