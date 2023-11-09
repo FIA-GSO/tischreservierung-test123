@@ -13,7 +13,7 @@ from freeTablesRequest import FreeTablesSchema, FreeTablesRequest
 app = Flask(__name__)
 
 def init_app():
-    app.config["DEBUG"] = True  # Zeigt Fehlerinformationen im Browser, statt nur einer generischen Error-Message
+    app.config["DEBUG"] = True
 
 # ENDPOINTS
 @app.route('/   ', methods=['POST'])
