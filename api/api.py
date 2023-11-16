@@ -24,12 +24,13 @@ def home():
 # ENDPOINTS
 @app.route('/ReserveTable', methods=['POST'])
 def reserve_table():
-    result = None
+    response_json = None
     pin = random.randint(1111, 9999)
     try:
         schema = ReserveSchema()
         data = schema.load(request.json)
         con = sqlite3.connect("DB/buchungssystem.sqlite")
+        con.row_factory = dict_factory
 
         # CHECK DATE
         print(data)
@@ -69,11 +70,7 @@ def reserve_table():
         parameters = (data.zeitpunkt, data.tischnummer, pin, "False")
         cursor.execute(query, parameters)
         
-        cursor = con.cursor()
-        select = "SELECT * FROM reservierungen WHERE zeitpunkt=? AND tischnummer=? AND pin=?"
-        selectParams = (data.zeitpunkt, data.tischnummer, pin)
-        cur_result = cursor.execute(select, selectParams)
-        result = cur_result.fetchone()
+        response_json = get_reservation_response(con, data.zeitpunkt, data.tischnummer, pin)
         
         print(response)
         con.commit()
@@ -82,8 +79,17 @@ def reserve_table():
     except ValidationError as e:
         return jsonify(e.messages), 400
 
-    print(result)
-    return jsonify(result), 200
+    print(response_json)
+    return response_json, 200
+
+def get_reservation_response(connection, zeitpunkt, tischnummer, pin):
+    cursor = connection.cursor()
+    select = "SELECT * FROM reservierungen WHERE zeitpunkt=? AND tischnummer=? AND pin=?"
+    selectParams = (zeitpunkt, tischnummer, pin)
+    cur_result = cursor.execute(select, selectParams)
+    result = cur_result.fetchone()
+    
+    return jsonify(result)
 
 
 @app.route('/FreeTables', methods=['GET'])
@@ -182,7 +188,11 @@ def get_checkit_options():
 
     return options
 
-
+def dict_factory(cursor, row):
+    d = {}
+    for idx, col in enumerate(cursor.description):
+        d[col[0]] = row[idx]
+    return d
 
 def get_start_end_today():
     today = datetime.utcnow().date()
