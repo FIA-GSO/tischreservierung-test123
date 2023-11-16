@@ -1,6 +1,7 @@
 import random
 import sqlite3
 import marshmallow
+import lorem
 from datetime import datetime, timedelta
 
 from flask import Flask, jsonify, request
@@ -16,29 +17,30 @@ def init_app():
     app.config["DEBUG"] = True  # Zeigt Fehlerinformationen im Browser, statt nur einer generischen Error-Message
 
 # ENDPOINTS
-@app.route('/   ', methods=['POST'])
+@app.route('/ReserveTable', methods=['POST'])
 def reserve_table():
-    successful = False
+    response = None
     pin = random.randint(1111, 9999)
     try:
-        reserve_loaded_data = ReserveSchema().load(request.json)
+        reserve_loaded_data = ReserveSchema().load(request.get_json())
         reserve_request = ReserveRequest(**reserve_loaded_data)
-
+        print(reserve_request)
         con = sqlite3.connect("DB/buchungssystem.sqlite")
 
         cursor = con.cursor()
         query = "INSERT INTO reservierungen(zeitpunkt, tischnummer, pin, storniert) VALUES (?, ?, ?, 0)"
         
         parameters = (reserve_request.datetime, reserve_request.tablenumber, pin)
-        res = cursor.execute(query, parameters)
-
+        response = cursor.execute(query, parameters)
+        print(response)
         con.commit()
         con.close()
 
     except marshmallow.ValidationError as e:
         return jsonify(e.messages), 400
 
-    return successful, 201
+    print(response)
+    return jsonify(response), 200
 
 
 @app.route('/FreeTables', methods=['GET'])
@@ -104,6 +106,41 @@ def all_reservations():
         return jsonify(e.messages), 400
     
     return result, 200
+
+
+@app.route('/CheckIt', methods=['GET'])
+def get_checkit_options():
+    options = {
+        "real": [
+            {
+                "text": lorem.text(),
+                "img": {
+                    "url": "https://img.zeit.de/politik/ausland/2023-06/usa-trump-anklage-geheimdokumente-tonbahnaufnahme-bild-2/square__960x960",
+                    "alt": lorem.paragraph()
+                }
+            }
+        ],
+        "fake": [
+            {
+                "text": lorem.text(),
+                "img": {
+                    "url": "https://i.imgflip.com/7i9qy9.jpg",
+                    "alt": lorem.paragraph()
+                },
+                "fakeHints": [    
+                    {
+                        "start": 1,
+                        "length": 3,
+                        "source": "https://www.google.com"
+                    },
+                ]
+            },
+        ],
+    }
+
+    return options
+
+
 
 def get_start_end_today():
     today = datetime.utcnow().date()

@@ -27,9 +27,6 @@ class ReserveSchema(Schema):
     datetime = fields.Str(required=True)
     duration = fields.Float(required=True)
 
-    username = fields.Str(required=True)
-    comment = fields.Str(required=True)
-
     @post_load
     def create_reserve_request(self, data, **kwargs):
         return ReserveRequest(**data)
