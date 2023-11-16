@@ -9,8 +9,9 @@ class ReserveRequest:
             mm = "00"
         elif int(mm) != 0:
             mm = "30"
-
-        return f"{date} {hh % 24:02d}:{mm}:00"
+        print(date)
+        print(time)
+        return f"{date} {hh:02}:{mm}:00"
     
     def __init__(self, tischnummer, zeitpunkt):
         self.tischnummer = tischnummer

@@ -23,7 +23,7 @@ def home():
 # ENDPOINTS
 @app.route('/ReserveTable', methods=['POST'])
 def reserve_table():
-    response = None
+    result = None
     pin = random.randint(1111, 9999)
     try:
         schema = ReserveSchema()
@@ -46,10 +46,17 @@ def reserve_table():
         print("NO RESERVIERUNG FOUND")
 
         cursor = con.cursor()
-        query = "INSERT INTO reservierungen(zeitpunkt, tischnummer, pin, storniert) VALUES (?, ?, ?, 0)"
+        query = "INSERT INTO reservierungen(zeitpunkt, tischnummer, pin, storniert) VALUES (?, ?, ?, ?)"
         
-        parameters = (data.zeitpunkt, data.tischnummer, pin)
-        response = cursor.execute(query, parameters)
+        parameters = (data.zeitpunkt, data.tischnummer, pin, "False")
+        cursor.execute(query, parameters)
+        
+        cursor = con.cursor()
+        select = "SELECT * FROM reservierungen WHERE zeitpunkt=? AND tischnummer=? AND pin=?"
+        selectParams = (data.zeitpunkt, data.tischnummer, pin)
+        cur_result = cursor.execute(select, selectParams)
+        result = cur_result.fetchone()
+        
         print(response)
         con.commit()
         con.close()
@@ -57,8 +64,8 @@ def reserve_table():
     except marshmallow.ValidationError as e:
         return jsonify(e.messages), 400
 
-    print(response)
-    return jsonify(response), 200
+    print(result)
+    return jsonify(result), 200
 
 
 @app.route('/FreeTables', methods=['GET'])
