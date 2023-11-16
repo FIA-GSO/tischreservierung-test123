@@ -115,16 +115,15 @@ def all_reservations():
 @app.route('/CheckIt', methods=['GET'])
 def get_checkit_options():
     options = {
-        "real": [
+        "real": 
             {
                 "text": lorem.text(),
                 "img": {
                     "url": "https://img.zeit.de/politik/ausland/2023-06/usa-trump-anklage-geheimdokumente-tonbahnaufnahme-bild-2/square__960x960",
                     "alt": lorem.paragraph()
                 }
-            }
-        ],
-        "fake": [
+            },
+        "fake": 
             {
                 "text": lorem.text(),
                 "img": {
@@ -139,7 +138,6 @@ def get_checkit_options():
                     },
                 ]
             },
-        ],
     }
 
     return options
