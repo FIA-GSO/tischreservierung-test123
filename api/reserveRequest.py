@@ -12,23 +12,16 @@ class ReserveRequest:
 
         return f"{date} {hh % 24:02d}:{mm}:00"
     
-    def __init__(self, tablenumber, number_of_guests, datetime, duration):
-        self.tablenumber = tablenumber
-        self.number_of_guests = number_of_guests
-        self.datetime = self.format_timestamp(datetime)
-        self.duration = duration
+    def __init__(self, tischnummer, zeitpunkt):
+        self.tischnummer = tischnummer
+        self.zeitpunkt = self.format_timestamp(zeitpunkt)
     
     def __repr__(self):
-        return f"{self.tablenumber}, {self.number_of_guests}, {self.datetime}, {self.duration}"
+        return f"{self.tischnummer},{self.zeitpunkt}"
 
 class ReserveSchema(Schema):
-    tablenumber = fields.Int(required=True)
-    number_of_guests = fields.Int(required=True)
-    datetime = fields.Str(required=True)
-    duration = fields.Float(required=True)
-
-    username = fields.Str(required=True)
-    comment = fields.Str(required=True)
+    tischnummer = fields.Int(required=True)
+    zeitpunkt = fields.Str(required=True)
 
     @post_load
     def create_reserve_request(self, data, **kwargs):
