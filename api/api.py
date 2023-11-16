@@ -1,7 +1,7 @@
 import random
 import sqlite3
 import marshmallow
-import lorem
+
 from datetime import datetime, timedelta
 
 from flask import Flask, jsonify, request
