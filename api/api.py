@@ -26,15 +26,14 @@ def reserve_table():
     response = None
     pin = random.randint(1111, 9999)
     try:
-        reserve_loaded_data = ReserveSchema().load(request.get_json())
-        reserve_request = ReserveRequest(**reserve_loaded_data)
-        print(reserve_request)
+        schema = ReserveSchema()
+        data = schema.load(request.json)
         con = sqlite3.connect("DB/buchungssystem.sqlite")
 
         cursor = con.cursor()
         query = "INSERT INTO reservierungen(zeitpunkt, tischnummer, pin, storniert) VALUES (?, ?, ?, 0)"
         
-        parameters = (reserve_request.datetime, reserve_request.tablenumber, pin)
+        parameters = (data.zeitpunkt, data.tischnummer, pin)
         response = cursor.execute(query, parameters)
         print(response)
         con.commit()
@@ -50,7 +49,8 @@ def reserve_table():
 @app.route('/FreeTables', methods=['GET'])
 def free_tables():
     try:
-        freetables_loaded_data = FreeTablesSchema().load(request.args.to_dict())
+        freetables_loaded_data = FreeTablesSchema().load(request.data)
+
         freetables_request = FreeTablesRequest(**freetables_loaded_data)
 
         con = sqlite3.connect('./DB/buchungssystem.sqlite')
