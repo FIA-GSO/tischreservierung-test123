@@ -147,37 +147,6 @@ def all_reservations():
     
     return result, 200
 
-
-@app.route('/CheckIt', methods=['GET'])
-def get_checkit_options():
-    options = {
-        "real": 
-            {
-                "text": lorem.text(),
-                "img": {
-                    "url": "https://img.zeit.de/politik/ausland/2023-06/usa-trump-anklage-geheimdokumente-tonbahnaufnahme-bild-2/square__960x960",
-                    "alt": lorem.paragraph()
-                }
-            },
-        "fake": 
-            {
-                "text": lorem.text(),
-                "img": {
-                    "url": "https://i.imgflip.com/7i9qy9.jpg",
-                    "alt": lorem.paragraph()
-                },
-                "fakeHints": [    
-                    {
-                        "start": 1,
-                        "length": 3,
-                        "source": "https://www.google.com"
-                    },
-                ]
-            },
-    }
-
-    return options
-
 def dict_factory(cursor, row):
     d = {}
     for idx, col in enumerate(cursor.description):
