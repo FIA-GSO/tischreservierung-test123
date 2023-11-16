@@ -30,6 +30,21 @@ def reserve_table():
         data = schema.load(request.json)
         con = sqlite3.connect("DB/buchungssystem.sqlite")
 
+        print(data.zeitpunkt)
+        print(data.tischnummer)
+
+
+        cursor = con.cursor()
+        prequery = f"SELECT * FROM reservierungen WHERE zeitpunkt = '{data.zeitpunkt}' AND tischnummer = '{data.tischnummer}'"
+        response = cursor.execute(prequery)
+        print(response)
+        rows = response.fetchall()
+        if(len(rows) > 0): return jsonify("Tisch schon vergeben"), 400
+
+
+
+        print("NO RESERVIERUNG FOUND")
+
         cursor = con.cursor()
         query = "INSERT INTO reservierungen(zeitpunkt, tischnummer, pin, storniert) VALUES (?, ?, ?, 0)"
         
