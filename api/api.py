@@ -35,8 +35,9 @@ def reserve_table():
 
 
         cursor = con.cursor()
-        prequery = f"SELECT * FROM reservierungen WHERE zeitpunkt = '{data.zeitpunkt}' AND tischnummer = '{data.tischnummer}'"
-        response = cursor.execute(prequery)
+        parameters = (data.zeitpunkt, data.tischnummer)
+        prequery = f"SELECT * FROM reservierungen WHERE zeitpunkt = ? AND tischnummer = ?"
+        response = cursor.execute(prequery, parameters)
         print(response)
         rows = response.fetchall()
         if(len(rows) > 0): return jsonify("Tisch schon vergeben"), 400
