@@ -1,6 +1,6 @@
 import random
 import sqlite3
-from marshmallow import Schema, fields, ValidationError
+from marshmallow import ValidationError
 from datetime import datetime, timedelta
 from flask import Flask, jsonify, request
 
@@ -23,47 +23,54 @@ def home():
 @app.route('/ReserveTable', methods=['POST'])
 def reserve_table():
     response_json = None
+    data = None
     now = datetime.now()
     pin = random.randint(1111, 9999)
+    
     try:
-        data = ReserveSchema().load(request.json)
+        data = ReserveSchema().load(request.json) 
+    except ValidationError as e:
+        return jsonify(e.messages), 400
+    
+    try:
         con = sqlite3.connect("DB/buchungssystem.sqlite")
         con.row_factory = dict_factory
-
+        
         # CHECK DATE
         try: time = datetime.strptime(data.zeitpunkt, "%Y-%m-%d %H:%M:%S")            
         except ValueError as e: return jsonify("zeitpunkt im falschem Format"), 400
-
         if(time.minute != 0 and time.minute != 30): return jsonify("zeitpunkt im falschem Format"), 400
         if(time < now): return jsonify("Kann nicht in die vergangenheit buchen"), 400
-
-        cursor = con.cursor()
-        parameters = (data.zeitpunkt, data.tischnummer)
-        prequery = "SELECT * FROM reservierungen WHERE zeitpunkt = ? AND tischnummer = ?"
-        response = cursor.execute(prequery, parameters)
-        print(response)
-        rows = response.fetchall()
-        if(len(rows) > 0): return jsonify("Tisch schon vergeben"), 400
-
-        print("NO RESERVIERUNG FOUND")
+        
+        if not has_free_table(con, data.zeitpunkt, data.tischnummer):
+            return "Kein Tisch verfügbar"
 
         cursor = con.cursor()
         query = "INSERT INTO reservierungen(zeitpunkt, tischnummer, pin, storniert) VALUES (?, ?, ?, ?)"
-        
+            
         parameters = (data.zeitpunkt, data.tischnummer, pin, "False")
         cursor.execute(query, parameters)
         
         response_json = get_reservation_response(con, data.zeitpunkt, data.tischnummer, pin)
         
-        print(response)
         con.commit()
         con.close()
-
-    except ValidationError as e:
-        return jsonify(e.messages), 400
+    except sqlite3.Error as e:
+        return jsonify(e), 400
 
     print(response_json)
     return response_json, 200
+
+def has_free_table(connection, zeitpunkt, tischnummer):
+    cursor = connection.cursor()
+    parameters = (zeitpunkt, tischnummer)
+    query = "SELECT * FROM reservierungen WHERE zeitpunkt = ? AND tischnummer = ?"
+    response = cursor.execute(query, parameters)
+    print(response)
+    rows = response.fetchall()
+    if(len(rows) > 0): return False
+    
+    return True
 
 def get_reservation_response(connection, zeitpunkt, tischnummer, pin):
     cursor = connection.cursor()
