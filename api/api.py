@@ -34,7 +34,6 @@ def reserve_table():
         try: time = datetime.strptime(data.zeitpunkt, "%Y-%m-%d %H:%M:%S")            
         except ValueError as e: return jsonify("zeitpunkt im falschem Format"), 400
 
-        print(time.minute)
         if(time.minute != 0 and time.minute != 30): return jsonify("zeitpunkt im falschem Format"), 400
         if(time < now): return jsonify("Kann nicht in die vergangenheit buchen"), 400
 
