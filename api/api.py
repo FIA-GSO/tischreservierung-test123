@@ -40,7 +40,7 @@ def reserve_table():
 
         cursor = con.cursor()
         parameters = (data.zeitpunkt, data.tischnummer)
-        prequery = f"SELECT * FROM reservierungen WHERE zeitpunkt = ? AND tischnummer = ?"
+        prequery = "SELECT * FROM reservierungen WHERE zeitpunkt = ? AND tischnummer = ?"
         response = cursor.execute(prequery, parameters)
         print(response)
         rows = response.fetchall()
