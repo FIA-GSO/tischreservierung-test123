@@ -36,18 +36,14 @@ def reserve_table():
         con = sqlite3.connect("DB/buchungssystem.sqlite")
         con.row_factory = dict_factory
         
-        # CHECK DATE
-        try: time = datetime.strptime(data.zeitpunkt, "%Y-%m-%d %H:%M:%S")            
-        except ValueError as e: return jsonify("zeitpunkt im falschem Format"), 400
-        if(time.minute != 0 and time.minute != 30): return jsonify("zeitpunkt im falschem Format"), 400
-        if(time < now): return jsonify("Kann nicht in die vergangenheit buchen"), 400
+        if not is_valid_reservation_datetime(con, data.zeitpunkt):    
+            return jsonify("Kann nicht in die vergangenheit buchen"), 400
         
         if not has_free_table(con, data.zeitpunkt, data.tischnummer):
-            return "Kein Tisch verfügbar"
+            return jsonify("Kein Tisch verfügbar"), 400
 
         cursor = con.cursor()
         query = "INSERT INTO reservierungen(zeitpunkt, tischnummer, pin, storniert) VALUES (?, ?, ?, ?)"
-            
         parameters = (data.zeitpunkt, data.tischnummer, pin, "False")
         cursor.execute(query, parameters)
         
@@ -68,8 +64,21 @@ def has_free_table(connection, zeitpunkt, tischnummer):
     response = cursor.execute(query, parameters)
     print(response)
     rows = response.fetchall()
-    if(len(rows) > 0): return False
+    if len(rows) > 0: 
+        return False
     
+    return True
+
+def is_valid_reservation_datetime(connection, date_time):
+    now = datetime.now()
+    try: 
+        time = datetime.strptime(date_time, "%Y-%m-%d %H:%M:%S")            
+    except ValueError as e: 
+        return False
+    if(time.minute != 0 and time.minute != 30): 
+        return False
+    if(time < now): 
+        return False
     return True
 
 def get_reservation_response(connection, zeitpunkt, tischnummer, pin):
