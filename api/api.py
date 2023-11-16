@@ -1,15 +1,16 @@
 import random
 import sqlite3
-import marshmallow
-
+from marshmallow import Schema, fields, ValidationError
 from datetime import datetime, timedelta
-
 from flask import Flask, jsonify, request
 
 #custom modules
-from reserveRequest import ReserveSchema, ReserveRequest
 from cancelRequest import CancelSchema, CancelRequest
 from freeTablesRequest import FreeTablesSchema, FreeTablesRequest
+
+class ReserveSchema(Schema):
+    tischnummer = fields.Int(required=True)
+    zeitpunkt = fields.Str(required=True)
 
 app = Flask(__name__)
 
@@ -30,8 +31,22 @@ def reserve_table():
         data = schema.load(request.json)
         con = sqlite3.connect("DB/buchungssystem.sqlite")
 
+        # CHECK DATE
+        print(data)
         print(data.zeitpunkt)
-        print(data.tischnummer)
+        t = data.zeitpunkt
+        if " " not in t: 
+            return jsonify("zeitpunkt im falschem Format"), 400
+        if "-" not in t: 
+            return jsonify("zeitpunkt im falschem Format"), 400
+        if ":" not in t: 
+            return jsonify("zeitpunkt im falschem Format"), 400
+
+        #date, time = t.split(" ")
+        #hh, mm, _ = time.split(":")
+
+
+
 
 
         cursor = con.cursor()
@@ -41,6 +56,8 @@ def reserve_table():
         print(response)
         rows = response.fetchall()
         if(len(rows) > 0): return jsonify("Tisch schon vergeben"), 400
+
+
 
 
 
@@ -62,7 +79,7 @@ def reserve_table():
         con.commit()
         con.close()
 
-    except marshmallow.ValidationError as e:
+    except ValidationError as e:
         return jsonify(e.messages), 400
 
     print(result)
@@ -83,7 +100,7 @@ def free_tables():
 
         all_bookings = cur.execute(query, freetables_request.timestamp).fetchall()
         con.close()
-    except marshmallow.ValidationError as e:
+    except ValidationError as e:
         return jsonify(e.messages), 400
     return all_bookings
 
@@ -110,7 +127,7 @@ def cancel_reservation():
                 success = True
 
         con.close()
-    except marshmallow.ValidationError as e:
+    except ValidationError as e:
         return jsonify(e.messages), 400
     if(success == False):
         return jsonify({"message": "Cancellation not successful! Reservation number or pin not correct."}), 400
@@ -129,7 +146,7 @@ def all_reservations():
         result = cursor.execute(query, parameter).fetchall()
 
         con.close()
-    except marshmallow.ValidationError as e:
+    except ValidationError as e:
         return jsonify(e.messages), 400
     
     return result, 200
