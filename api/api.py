@@ -25,6 +25,7 @@ def home():
 @app.route('/ReserveTable', methods=['POST'])
 def reserve_table():
     response_json = None
+    now = datetime.now()
     pin = random.randint(1111, 9999)
     try:
         schema = ReserveSchema()
@@ -33,22 +34,12 @@ def reserve_table():
         con.row_factory = dict_factory
 
         # CHECK DATE
-        print(data)
-        print(data.zeitpunkt)
-        t = data.zeitpunkt
-        if " " not in t: 
-            return jsonify("zeitpunkt im falschem Format"), 400
-        if "-" not in t: 
-            return jsonify("zeitpunkt im falschem Format"), 400
-        if ":" not in t: 
-            return jsonify("zeitpunkt im falschem Format"), 400
+        try: time = datetime.strptime(data["zeitpunkt"], "%Y-%m-%d %H:%M:%S")            
+        except ValueError as e: return jsonify("zeitpunkt im falschem Format"), 400
 
-        #date, time = t.split(" ")
-        #hh, mm, _ = time.split(":")
-
-
-
-
+        print(time.minute)
+        if(time.minute != 0 and time.minute != 30): return jsonify("zeitpunkt im falschem Format"), 400
+        if(time < now): return jsonify("Kann nicht in die vergangenheit buchen"), 400
 
         cursor = con.cursor()
         parameters = (data.zeitpunkt, data.tischnummer)
@@ -57,10 +48,6 @@ def reserve_table():
         print(response)
         rows = response.fetchall()
         if(len(rows) > 0): return jsonify("Tisch schon vergeben"), 400
-
-
-
-
 
         print("NO RESERVIERUNG FOUND")
 
