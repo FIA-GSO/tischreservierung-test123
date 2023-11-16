@@ -15,8 +15,12 @@ app = Flask(__name__)
 def init_app():
     app.config["DEBUG"] = True
 
+@app.route('/')
+def home():
+    app.send_static_file("/index.html")
+
 # ENDPOINTS
-@app.route('/   ', methods=['POST'])
+@app.route('/ReserveTable', methods=['POST'])
 def reserve_table():
     successful = False
     pin = random.randint(1111, 9999)
