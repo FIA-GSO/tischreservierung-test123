@@ -7,10 +7,8 @@ from flask import Flask, jsonify, request
 #custom modules
 from cancelRequest import CancelSchema, CancelRequest
 from freeTablesRequest import FreeTablesSchema, FreeTablesRequest
+from reserveRequest import ReserveSchema
 
-class ReserveSchema(Schema):
-    tischnummer = fields.Int(required=True)
-    zeitpunkt = fields.Str(required=True)
 
 app = Flask(__name__)
 
@@ -28,13 +26,12 @@ def reserve_table():
     now = datetime.now()
     pin = random.randint(1111, 9999)
     try:
-        schema = ReserveSchema()
-        data = schema.load(request.json)
+        data = ReserveSchema().load(request.json)
         con = sqlite3.connect("DB/buchungssystem.sqlite")
         con.row_factory = dict_factory
 
         # CHECK DATE
-        try: time = datetime.strptime(data["zeitpunkt"], "%Y-%m-%d %H:%M:%S")            
+        try: time = datetime.strptime(data.zeitpunkt, "%Y-%m-%d %H:%M:%S")            
         except ValueError as e: return jsonify("zeitpunkt im falschem Format"), 400
 
         print(time.minute)
