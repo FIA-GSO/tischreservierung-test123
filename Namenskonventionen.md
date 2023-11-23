@@ -21,5 +21,9 @@ stattdessen richtig /articles/:articleId/comments und /users/:userId in der Resp
 Zum schonen des Servers soll es möglich sein, nur bestimmt Daten zu holen.
 Bei grossen Datenmengen sollen die Daten in Batches zurückgegeben werden, damit 
 6. Maintain good security practices
+-SSL und TLS verwenden
+-Man sollte nicht mehr Daten zurückliefern als angefragt wird, also ein User soll nicht die Daten eines anderen Anfragen können/erhalten
+-Rollen/Grupper/User Permissions verwenden um Rechteverteilung bei der verschiedenen APIs zu verwalten
+
 7. Cache data to improve performance
 8. VERSIONING
