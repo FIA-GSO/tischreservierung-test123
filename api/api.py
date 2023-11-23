@@ -4,6 +4,7 @@ from marshmallow import ValidationError
 from datetime import datetime, timedelta
 from flask import Flask, jsonify, request
 from flask_caching import Cache
+from flask.views import MethodView
 from flask_rest_api import Api, Blueprint, abort
 
 # from flask_restful import Api, Resource
