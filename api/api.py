@@ -10,7 +10,7 @@ from cancelRequest import CancelSchema, CancelRequest
 from freeTablesRequest import FreeTablesSchema, FreeTablesRequest
 from reserveRequest import ReserveSchema
 
-
+version = "/v1"
 app = Flask(__name__)
 
 def init_app():
@@ -21,7 +21,7 @@ def home():
     app.send_static_file("/index.html")
 
 # ENDPOINTS
-@app.route('/Reservation', methods=['POST'])
+@app.route(f'{version}/Reservation', methods=['POST'])
 def reserve_table():
     response_json = None
     data = None
@@ -92,7 +92,7 @@ def get_reservation_response(connection, zeitpunkt, tischnummer, pin):
     return jsonify(result)
 
 
-@app.route('/FreeTables', methods=['GET'])
+@app.route(f'{version}/FreeTables', methods=['GET'])
 def free_tables():
     try:
         freetables_loaded_data = FreeTablesSchema().load(request.data)
@@ -111,7 +111,7 @@ def free_tables():
     return all_bookings
 
 
-@app.route('/Reservation', methods=['DELETE'])
+@app.route(f'{version}/Reservation', methods=['DELETE'])
 def cancel_reservation():
     try:
         cancel_loaded_data = CancelSchema().load(request.data)
@@ -140,7 +140,7 @@ def cancel_reservation():
     return jsonify({"message": "Cancellation successfully!"}), 201
 
 
-@app.route('/AllReservations', methods=['GET'])
+@app.route(f'{version}/AllReservations', methods=['GET'])
 def all_reservations():
     try:
         con = sqlite3.connect("DB/buchungssystem.sqlite")
