@@ -2,7 +2,7 @@ import random
 import sqlite3
 from marshmallow import ValidationError
 from datetime import datetime, timedelta
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Blueprint
 from flask_restful import Api, Resource
 
 #custom modules
@@ -11,16 +11,17 @@ from freeTablesRequest import FreeTablesSchema, FreeTablesRequest
 from reserveRequest import ReserveSchema
 
 app = Flask(__name__)
+v1_Blueprint = Blueprint(name="v1", import_name="v1")
 
 def init_app():
     app.config["DEBUG"] = True
 
-@app.route('/')
+@v1_Blueprint.route('/')
 def home():
     app.send_static_file("/index.html")
 
 # ENDPOINTS
-@app.route('/v1/Reservation', methods=['POST'])
+@v1_Blueprint.route('/Reservation', methods=['POST'])
 def reserve_table():
     response_json = None
     data = None
@@ -57,6 +58,69 @@ def reserve_table():
     print(response_json)
     return response_json, 200
 
+@v1_Blueprint.route('/FreeTables', methods=['GET'])
+def free_tables():
+    try:
+        freetables_loaded_data = FreeTablesSchema().load(request.data)
+
+        freetables_request = FreeTablesRequest(**freetables_loaded_data)
+
+        con = sqlite3.connect('./DB/buchungssystem.sqlite')
+
+        cur = con.cursor()
+        query = "SELECT * FROM reservierungen WHERE zeitpunkt LIKE '?'"
+
+        all_bookings = cur.execute(query, freetables_request.timestamp).fetchall()
+        con.close()
+    except ValidationError as e:
+        return jsonify(e.messages), 400
+    return all_bookings
+
+@v1_Blueprint.route('/Reservation', methods=['DELETE'])
+def cancel_reservation():
+    try:
+        cancel_loaded_data = CancelSchema().load(request.data)
+        cancel_request = CancelRequest(**cancel_loaded_data)
+
+        reservation_number = cancel_request.reservation_number
+        print(f"resrvation_number: {reservation_number}")
+        pin = cancel_request.pin
+        print(f"PIN: {pin}")
+        con = sqlite3.connect("DB/buchungssystem.sqlite")
+
+        cursor = con.cursor()
+        query = "SELECT * FROM reservierungen WHERE reservierungsnummer = ?"
+
+        success = False
+        for row in cursor.execute(query, cancel_request.reservation_number):
+            print(row)
+            if (str(row[3]) == pin):
+                success = True
+
+        con.close()
+    except ValidationError as e:
+        return jsonify(e.messages), 400
+    if(success == False):
+        return jsonify({"message": "Cancellation not successful! Reservation number or pin not correct."}), 400
+    return jsonify({"message": "Cancellation successfully!"}), 201
+
+@v1_Blueprint.route('/AllReservations', methods=['GET'])
+def all_reservations():
+    try:
+        con = sqlite3.connect("DB/buchungssystem.sqlite")
+        
+        cursor = con.cursor()
+        query = "SELECT * FROM reservierungen WHERE zeitpunkt > ? AND zeitpunkt < ? AND storniert=FALSE"
+
+        parameter = get_start_end_today()
+        result = cursor.execute(query, parameter).fetchall()
+
+        con.close()
+    except ValidationError as e:
+        return jsonify(e.messages), 400
+    
+    return result, 200
+
 def has_free_table(connection, zeitpunkt, tischnummer):
     cursor = connection.cursor()
     parameters = (zeitpunkt, tischnummer)
@@ -89,72 +153,6 @@ def get_reservation_response(connection, zeitpunkt, tischnummer, pin):
     result = cur_result.fetchone()
     
     return jsonify(result)
-
-
-@app.route('/v1/FreeTables', methods=['GET'])
-def free_tables():
-    try:
-        freetables_loaded_data = FreeTablesSchema().load(request.data)
-
-        freetables_request = FreeTablesRequest(**freetables_loaded_data)
-
-        con = sqlite3.connect('./DB/buchungssystem.sqlite')
-
-        cur = con.cursor()
-        query = "SELECT * FROM reservierungen WHERE zeitpunkt LIKE '?'"
-
-        all_bookings = cur.execute(query, freetables_request.timestamp).fetchall()
-        con.close()
-    except ValidationError as e:
-        return jsonify(e.messages), 400
-    return all_bookings
-
-
-@app.route('/v1/Reservation', methods=['DELETE'])
-def cancel_reservation():
-    try:
-        cancel_loaded_data = CancelSchema().load(request.data)
-        cancel_request = CancelRequest(**cancel_loaded_data)
-
-        reservation_number = cancel_request.reservation_number
-        print(f"resrvation_number: {reservation_number}")
-        pin = cancel_request.pin
-        print(f"PIN: {pin}")
-        con = sqlite3.connect("DB/buchungssystem.sqlite")
-
-        cursor = con.cursor()
-        query = "SELECT * FROM reservierungen WHERE reservierungsnummer = ?"
-
-        success = False
-        for row in cursor.execute(query, cancel_request.reservation_number):
-            print(row)
-            if (str(row[3]) == pin):
-                success = True
-
-        con.close()
-    except ValidationError as e:
-        return jsonify(e.messages), 400
-    if(success == False):
-        return jsonify({"message": "Cancellation not successful! Reservation number or pin not correct."}), 400
-    return jsonify({"message": "Cancellation successfully!"}), 201
-
-
-@app.route('/v1/AllReservations', methods=['GET'])
-def all_reservations():
-    try:
-        con = sqlite3.connect("DB/buchungssystem.sqlite")
-        
-        cursor = con.cursor()
-        query = "SELECT * FROM reservierungen WHERE zeitpunkt > ? AND zeitpunkt < ? AND storniert=FALSE"
-
-        parameter = get_start_end_today()
-        result = cursor.execute(query, parameter).fetchall()
-
-        con.close()
-    except ValidationError as e:
-        return jsonify(e.messages), 400
-    
-    return result, 200
 
 def dict_factory(cursor, row):
     d = {}
