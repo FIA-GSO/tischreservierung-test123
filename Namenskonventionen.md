@@ -1,8 +1,11 @@
 QUELLE: https://stackoverflow.blog/2020/03/02/best-practices-for-rest-api-design/
 
 1. JSON für Request-Payload oder Response akzeptieren
+```
+return jsonify(e.messages), 400
+```
 
-2. KEINE VERBEN
+3. KEINE VERBEN
    Da die HTTP Methoden wie GET POST DELETE schon was getan wird angeben,
    brauchen wir diese Information nicht im Endpunktnamen wiederholen.
 
@@ -38,8 +41,12 @@ stattdessen richtig /articles/:articleId/comments und /users/:userId in der Resp
    Implementieren eines Caching-Mechanismus wie Flask-Caching oder In-Memory-Caching, um die Geschwindigkeit des Datenabrufs zu erhöhen.
    Aufnahme von Cache-Control-Informationen in die Kopfzeilen, um den Benutzer die effektive Nutzung des Caching-Systems zu ermöglichen und
    ein Gleichgewicht zwischen Performanz und potentiell veraltete Daten in produktiven Umgebungen zu schaffen.
+   ```
+   @cache.cached(timeout=60, make_cache_key=make_key)
+   ```
 
-8. VERSIONING
+
+9. VERSIONING
    Damit laufende Dienste Zeit haben, sich auf Änderungen in der API einzustellen soll
    es verschiedene Versionen der Endpunkte geben. Diese werden z.B. durch /v1/endpunktname und
    /v2/endpunktname differenziert. So ist die alte Version weiterhin verfügbar bis auf v2 umgestellt wird von Nutzern der API.
