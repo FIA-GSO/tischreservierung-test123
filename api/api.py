@@ -2,21 +2,20 @@ import random
 import sqlite3
 from marshmallow import ValidationError
 from datetime import datetime, timedelta
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Blueprint
 from flask_caching import Cache
 from flask.views import MethodView
-from flask_rest_api import Api, Blueprint, abort
-
-# from flask_restful import Api, Resource
-
+from flasgger import Swagger
 # custom modules
 from cancelRequest import CancelSchema, CancelRequest
 from freeTablesRequest import FreeTablesSchema, FreeTablesRequest
 from reserveRequest import ReserveSchema
 
 
+
+
+
 app = Flask(__name__)
-app.config['OPENAPI_VERSION'] = '3.0.2'
 v1_Blueprint = Blueprint(name="v1", import_name="v1")
 cache = Cache(app)
 
@@ -43,6 +42,7 @@ def home():
 
 # ENDPOINTS
 @v1_Blueprint.route("/Reservation", methods=["POST"])
+@swag_from('swagger.yml')
 @cache.cached(timeout=60, make_cache_key=make_key)
 def reserve_table():
     response_json = None
