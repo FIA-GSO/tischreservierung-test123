@@ -3,9 +3,9 @@ import sqlite3
 from marshmallow import ValidationError
 from datetime import datetime, timedelta
 from flask import Flask, jsonify, request, Blueprint
+from flask_caching import Cache
 
 # from flask_restful import Api, Resource
-from flask_cache import Cache
 
 # custom modules
 from cancelRequest import CancelSchema, CancelRequest
@@ -92,8 +92,7 @@ def free_tables():
         cur = con.cursor()
         query = "SELECT * FROM reservierungen WHERE zeitpunkt LIKE '?'"
 
-        all_bookings = cur.execute(
-            query, freetables_request.timestamp).fetchall()
+        all_bookings = cur.execute(query, freetables_request.timestamp).fetchall()
         con.close()
     except ValidationError as e:
         return jsonify(e.messages), 400
