@@ -1,3 +1,6 @@
+QUELLE: https://stackoverflow.blog/2020/03/02/best-practices-for-rest-api-design/
+
+
 1. JSON für Request-Payload oder Response akzeptieren
 
 2. KEINE VERBEN
