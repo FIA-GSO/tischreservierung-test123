@@ -16,7 +16,6 @@ from reserveRequest import ReserveSchema
 
 
 app = Flask(__name__)
-app.config['OPENAPI_VERSION'] = '3.0.2'
 v1_Blueprint = Blueprint(name="v1", import_name="v1")
 cache = Cache(app)
 
@@ -33,6 +32,7 @@ def make_key():
 
 def init_app():
     app.config["DEBUG"] = True
+    app.config['OPENAPI_VERSION'] = '3.0.2'
     app.register_blueprint(v1_Blueprint, url_prefix="/v1")
 
 
