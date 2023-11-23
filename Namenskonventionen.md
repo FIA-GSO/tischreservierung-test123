@@ -1,19 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-2. KEINE VERBEN
-   Da die HTTP Methoden wie GET POST DELETE schon was getan wird angeben,
-   brauchen wir diese Information nicht im Endpunktnamen wiederholen.
-3.
-4.
-5. FILTERN UND PAGINIERUNG
-   Zum schonen des Servers soll es möglich sein, nur bestimmt Daten zu holen.
-   Bei grossen Datenmengen sollen die Daten in Batches zurückgegeben werden, damit
-6.
-7. =======
-   > > > > > > > 500a40c (JSON <3)
-=======
-
 1. JSON für Request-Payload oder Response akzeptieren
 2. KEINE VERBEN
 Da die HTTP Methoden wie GET POST DELETE schon was getan wird angeben,
@@ -31,7 +15,10 @@ richtig /articles/:articleId/comments
 Dennoch sollte man es mit dem Nesting nicht übertreiben, nach max 3 Nesting könnte man auch die Resourcen-Quelle in der Antwort zurückliefern.
 falsch /articles/:articleId/comments/:commentId/author 
 stattdessen richtig /articles/:articleId/comments und /users/:userId in der Response zurückgeben
-4.
+4. Ordnungsgemäße Behandlung von Fehlern und Rückgabe beschreibender HTTP-Antwortcodes, um API-Benutzern klare Informationen zu liefern
+und die API-Stabilität aufrechtzuerhalten.
+Vermeiden Fehler unbehandelt zu lassen, um sicherzustellen, 
+dass der Benutzer Probleme effektiv angehen und verwalten kann, ohne die Systemintegrität zu beeinträchtigen.
 5. FILTERN UND PAGINIERUNG
 Zum schonen des Servers soll es möglich sein, nur bestimmt Daten zu holen.
 Bei grossen Datenmengen sollen die Daten in Batches zurückgegeben werden, damit 
