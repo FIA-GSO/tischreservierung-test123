@@ -23,3 +23,6 @@ Bei grossen Datenmengen sollen die Daten in Batches zurückgegeben werden, damit
 6. Maintain good security practices
 7. Cache data to improve performance
 8. VERSIONING
+Damit laufende Dienste Zeit haben, sich auf Änderungen in der API einzustellen soll
+es verschiedene Versionen der Endpunkte geben. Diese werden z.B. durch /v1/endpunktname und
+/v2/endpunktname differenziert. So ist die alte Version weiterhin verfügbar bis auf v2 umgestellt wird von Nutzern der API.
