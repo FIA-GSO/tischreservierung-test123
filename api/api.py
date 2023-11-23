@@ -32,6 +32,7 @@ def make_key():
 
 def init_app():
     app.config["DEBUG"] = True
+    app.config['OPENAPI_VERSION'] = '3.0.2'
     app.register_blueprint(v1_Blueprint, url_prefix="/v1")
 
 
