@@ -3,6 +3,7 @@ import sqlite3
 from marshmallow import ValidationError
 from datetime import datetime, timedelta
 from flask import Flask, jsonify, request
+from flask_restful import Api, Resource
 
 #custom modules
 from cancelRequest import CancelSchema, CancelRequest
@@ -20,7 +21,7 @@ def home():
     app.send_static_file("/index.html")
 
 # ENDPOINTS
-@app.route('/ReserveTable', methods=['POST'])
+@app.route('/Reservation', methods=['POST'])
 def reserve_table():
     response_json = None
     data = None
@@ -110,7 +111,7 @@ def free_tables():
     return all_bookings
 
 
-@app.route('/CancelReservation', methods=['PATCH'])
+@app.route('/Reservation', methods=['DELETE'])
 def cancel_reservation():
     try:
         cancel_loaded_data = CancelSchema().load(request.data)
