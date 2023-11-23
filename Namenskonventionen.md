@@ -1,9 +1,9 @@
 QUELLE: https://stackoverflow.blog/2020/03/02/best-practices-for-rest-api-design/
 
 1. JSON für Request-Payload oder Response akzeptieren
-```
-return jsonify(e.messages), 400
-```
+   ```
+   return jsonify(e.messages), 400
+   ```
 
 2. KEINE VERBEN
    Da die HTTP Methoden wie GET POST DELETE schon was getan wird angeben,
