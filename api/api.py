@@ -13,7 +13,9 @@ from cancelRequest import CancelSchema, CancelRequest
 from freeTablesRequest import FreeTablesSchema, FreeTablesRequest
 from reserveRequest import ReserveSchema
 
+
 app = Flask(__name__)
+app.config['OPENAPI_VERSION'] = '3.0.2'
 v1_Blueprint = Blueprint(name="v1", import_name="v1")
 cache = Cache(app)
 
