@@ -21,6 +21,7 @@ class FreeTablesRequest:
 
 class FreeTablesSchema(Schema):
     timestamp = fields.Str(required=True)
+    tableNr = fields.Int(required=False)
 
     @post_load
     def create_freetables_schema(self, data, **kwargs):
