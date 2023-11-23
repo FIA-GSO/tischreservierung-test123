@@ -5,23 +5,23 @@ QUELLE: https://stackoverflow.blog/2020/03/02/best-practices-for-rest-api-design
 return jsonify(e.messages), 400
 ```
 
-3. KEINE VERBEN
+2. KEINE VERBEN
    Da die HTTP Methoden wie GET POST DELETE schon was getan wird angeben,
    brauchen wir diese Information nicht im Endpunktnamen wiederholen.
 
-## 3. Logisches Nesting von Endpoints
+3. Logisches Nesting von Endpoints
 
-Endpunkte die eine auf gleicher Information aufbauen sollten gemäß der Information gruppiert werden.
-Auch wenn dies nicht dem Datenbankschema entspricht ist es Good practice und verringert die potentielle Angrifffläche
+   Endpunkte die eine auf gleicher Information aufbauen sollten gemäß der Information gruppiert werden.
+   Auch wenn dies nicht dem Datenbankschema entspricht ist es Good practice und verringert die potentielle Angrifffläche
 
-Bsp:
-News-Webseite mit Artikeln und Kommentaren
-falsch /articles & /comments?articleId=...
-richtig /articles/:articleId/comments
+   Bsp:
+   News-Webseite mit Artikeln und Kommentaren
+   falsch /articles & /comments?articleId=...
+   richtig /articles/:articleId/comments
 
-Dennoch sollte man es mit dem Nesting nicht übertreiben, nach max 3 Nesting könnte man auch die Resourcen-Quelle in der Antwort zurückliefern.
-falsch /articles/:articleId/comments/:commentId/author
-stattdessen richtig /articles/:articleId/comments und /users/:userId in der Response zurückgeben
+   Dennoch sollte man es mit dem Nesting nicht übertreiben, nach max 3 Nesting könnte man auch die Resourcen-Quelle in der Antwort    zurückliefern.
+   falsch /articles/:articleId/comments/:commentId/author
+   stattdessen richtig /articles/:articleId/comments und /users/:userId in der Response zurückgeben
 
 4. Ordnungsgemäße Behandlung von Fehlern und Rückgabe beschreibender HTTP-Antwortcodes, um API-Benutzern klare Informationen zu liefern
    und die API-Stabilität aufrechtzuerhalten.
@@ -46,7 +46,7 @@ stattdessen richtig /articles/:articleId/comments und /users/:userId in der Resp
    ```
 
 
-9. VERSIONING
+8. VERSIONING
    Damit laufende Dienste Zeit haben, sich auf Änderungen in der API einzustellen soll
    es verschiedene Versionen der Endpunkte geben. Diese werden z.B. durch /v1/endpunktname und
    /v2/endpunktname differenziert. So ist die alte Version weiterhin verfügbar bis auf v2 umgestellt wird von Nutzern der API.
