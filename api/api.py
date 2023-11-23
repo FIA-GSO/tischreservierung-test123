@@ -4,6 +4,7 @@ from marshmallow import ValidationError
 from datetime import datetime, timedelta
 from flask import Flask, jsonify, request, Blueprint
 from flask_restful import Api, Resource
+from flask_cache import Cache
 
 #custom modules
 from cancelRequest import CancelSchema, CancelRequest
@@ -12,6 +13,17 @@ from reserveRequest import ReserveSchema
 
 app = Flask(__name__)
 v1_Blueprint = Blueprint(name="v1", import_name="v1")
+cache = Cache(app)
+
+def make_key():
+   """A function which is called to derive the key for a computed value.
+      The key in this case is the concat value of all the json request
+      parameters. Other strategy could to use any hashing function.
+   :returns: unique string for which the value should be cached.
+   """
+   user_data = request.get_json()
+   return ",".join([f"{key}={value}" for key, value in user_data.items()])
+
 
 def init_app():
     app.config["DEBUG"] = True
@@ -23,6 +35,7 @@ def home():
 
 # ENDPOINTS
 @v1_Blueprint.route('/Reservation', methods=['POST'])
+@cache.cached(timeout=60, make_cache_key=make_key)
 def reserve_table():
     response_json = None
     data = None
@@ -60,6 +73,7 @@ def reserve_table():
     return response_json, 200
 
 @v1_Blueprint.route('/FreeTables', methods=['GET'])
+@cache.cached(timeout=60, make_cache_key=make_key)
 def free_tables():
     try:
         freetables_loaded_data = FreeTablesSchema().load(request.data)
@@ -106,6 +120,7 @@ def cancel_reservation():
     return jsonify({"message": "Cancellation successfully!"}), 201
 
 @v1_Blueprint.route('/AllReservations', methods=['GET'])
+@cache.cached(timeout=60, make_cache_key=make_key)
 def all_reservations():
     try:
         con = sqlite3.connect("DB/buchungssystem.sqlite")
