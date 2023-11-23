@@ -32,6 +32,9 @@ Bei grossen Datenmengen sollen die Daten in Batches zurückgegeben werden, damit
 -Rollen/Grupper/User Permissions verwenden um Rechteverteilung bei der verschiedenen APIs zu verwalten
 
 7. Cache data to improve performance
+Implementieren eines Caching-Mechanismus wie Redis oder In-Memory-Caching, um die Geschwindigkeit des Datenabrufs zu erhöhen. 
+Aufnahme von Cache-Control-Informationen in die Kopfzeilen, um den Benutzer die effektive Nutzung des Caching-Systems zu ermöglichen und
+ein Gleichgewicht zwischen Performanz und potentiell veraltete Daten in produktiven Umgebungen zu schaffen.
 
 8. VERSIONING
 Damit laufende Dienste Zeit haben, sich auf Änderungen in der API einzustellen soll
