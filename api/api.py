@@ -2,11 +2,7 @@ import random
 import sqlite3
 from marshmallow import ValidationError
 from datetime import datetime, timedelta
-from flask import Flask, jsonify, request, Blueprint
-from flask_caching import Cache
-from flask.views import MethodView
-from flasgger import Swagger
-# custom modules
+from flask import Flask, jsonify, request
 from cancelRequest import CancelSchema, CancelRequest
 from freeTablesRequest import FreeTablesSchema, FreeTablesRequest
 from reserveRequest import ReserveSchema
@@ -16,8 +12,6 @@ from reserveRequest import ReserveSchema
 
 
 app = Flask(__name__)
-v1_Blueprint = Blueprint(name="v1", import_name="v1")
-cache = Cache(app)
 
 
 def make_key():
@@ -32,19 +26,14 @@ def make_key():
 
 def init_app():
     app.config["DEBUG"] = True
-    app.config['OPENAPI_VERSION'] = '3.0.2'
-    app.register_blueprint(v1_Blueprint, url_prefix="/v1")
 
-
-@v1_Blueprint.route("/")
+@app.route("/")
 def home():
-    app.send_static_file("/index.html")
+    app.send_static_file("index.html")
 
 
 # ENDPOINTS
-@v1_Blueprint.route("/Reservation", methods=["POST"])
-@swag_from('swagger.yml')
-@cache.cached(timeout=60, make_cache_key=make_key)
+@app.route("/Reservation", methods=["POST"])
 def reserve_table():
     response_json = None
     data = None
@@ -84,8 +73,7 @@ def reserve_table():
     return response_json, 200
 
 
-@v1_Blueprint.route("/FreeTables", methods=["GET"])
-@cache.cached(timeout=60, make_cache_key=make_key)
+@app.route("/FreeTables", methods=["GET"])
 def free_tables():
     try:
         freetables_loaded_data = FreeTablesSchema().load(request.data)
@@ -105,7 +93,7 @@ def free_tables():
     return all_bookings
 
 
-@v1_Blueprint.route("/Reservation", methods=["DELETE"])
+@app.route("/Reservation", methods=["DELETE"])
 def cancel_reservation():
     try:
         cancel_loaded_data = CancelSchema().load(request.data)
@@ -141,8 +129,7 @@ def cancel_reservation():
     return jsonify({"message": "Cancellation successfully!"}), 201
 
 
-@v1_Blueprint.route("/AllReservations", methods=["GET"])
-@cache.cached(timeout=60, make_cache_key=make_key)
+@app.route("/AllReservations", methods=["GET"])
 def all_reservations():
     try:
         con = sqlite3.connect("DB/buchungssystem.sqlite")
