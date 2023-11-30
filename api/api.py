@@ -18,12 +18,12 @@ def make_key():
 
 
 def init_app(app):
-        
+
     @app.route('/api/docs')
     def get_docs():
         print('sending docs')
         return render_template('swaggerui.html')
-    
+
     @app.route("/")
     def home():
         app.send_static_file("index.html")
@@ -73,17 +73,17 @@ def init_app(app):
         try:
             con = sqlite3.connect("./DB/buchungssystem.sqlite")
             con.row_factory = dict_factory
-            timestamp = request.json['timestamp']
+            timestamp = request.json["timestamp"]
             dt = format_timestamp(timestamp)
             print(dt)
             cur = con.cursor()
-            query = f"SELECT * FROM reservierungen WHERE zeitpunkt = '{dt}'"
+            query = "SELECT * FROM reservierungen WHERE zeitpunkt = ?"
 
-            all_bookings = cur.execute(query).fetchall()
+            all_bookings = cur.execute(query, (dt,)).fetchall()
             con.close()
         except ValidationError as e:
             return jsonify(e.messages), 400
-        return jsonify(bookings = all_bookings),200
+        return jsonify(bookings=all_bookings), 200
 
     @app.route("/Reservation", methods=["DELETE"])
     def cancel_reservation():
@@ -199,20 +199,26 @@ def create_app():
 
     return app
 
+
 def format_timestamp(timestamp) -> datetime:
-    try: 
+    try:
         time = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
 
         if time.minute > 30:
-            time = time.replace(hour=time.hour + 1,minute = 0)
+            time = time.replace(hour=time.hour + 1, minute=0)
         elif time.minute != 0:
-            time = time.replace(minute = 30)
+            time = time.replace(minute=30)
 
     except ValueError:
-        raise("TIMESTAMP!!!!!!!!!")
+        raise ("TIMESTAMP!!!!!!!!!")
 
     return time
 
+
 if __name__ == "__main__":
     app = create_app()
-    app.run(use_reloader=True, debug=False)
+<< << << < HEAD
+app.run(use_reloader=True, debug=False)
+== == == =
+app.run()
+>>>>>> > 8f3e494(sql execute placeholder)
