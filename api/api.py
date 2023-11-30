@@ -8,12 +8,6 @@ from freeTablesRequest import FreeTablesSchema, FreeTablesRequest
 from reserveRequest import ReserveSchema
 
 
-
-
-
-app = Flask(__name__)
-
-
 def make_key():
     """A function which is called to derive the key for a computed value.
        The key in this case is the concat value of all the json request
@@ -24,127 +18,121 @@ def make_key():
     return ",".join([f"{key}={value}" for key, value in user_data.items()])
 
 
-def init_app():
-    app.config["DEBUG"] = True
+def init_app(app):
+    @app.route("/")
+    def home():
+        app.send_static_file("index.html")
 
-@app.route("/")
-def home():
-    app.send_static_file("index.html")
+    # ENDPOINTS
+    @app.route("/Reservation", methods=["POST"])
+    def reserve_table():
+        response_json = None
+        data = None
+        # now = datetime.now()
+        pin = random.randint(1111, 9999)
 
+        try:
+            data = ReserveSchema().load(request.json)
+        except ValidationError as e:
+            return jsonify(e.messages), 400
 
-# ENDPOINTS
-@app.route("/Reservation", methods=["POST"])
-def reserve_table():
-    response_json = None
-    data = None
-    # now = datetime.now()
-    pin = random.randint(1111, 9999)
+        try:
+            con = sqlite3.connect("DB/buchungssystem.sqlite")
+            con.row_factory = dict_factory
 
-    try:
-        data = ReserveSchema().load(request.json)
-    except ValidationError as e:
-        return jsonify(e.messages), 400
+            if not is_valid_reservation_datetime(con, data.zeitpunkt):
+                return jsonify("Kann nicht in die vergangenheit buchen"), 400
 
-    try:
-        con = sqlite3.connect("DB/buchungssystem.sqlite")
-        con.row_factory = dict_factory
+            if not has_free_table(con, data.zeitpunkt, data.tischnummer):
+                return jsonify("Kein Tisch verfügbar"), 400
 
-        if not is_valid_reservation_datetime(con, data.zeitpunkt):
-            return jsonify("Kann nicht in die vergangenheit buchen"), 400
+            cursor = con.cursor()
+            query = "INSERT INTO reservierungen(zeitpunkt, tischnummer, pin, storniert) VALUES (?, ?, ?, ?)"
+            parameters = (data.zeitpunkt, data.tischnummer, pin, "False")
+            cursor.execute(query, parameters)
 
-        if not has_free_table(con, data.zeitpunkt, data.tischnummer):
-            return jsonify("Kein Tisch verfügbar"), 400
+            response_json = get_reservation_response(
+                con, data.zeitpunkt, data.tischnummer, pin
+            )
 
-        cursor = con.cursor()
-        query = "INSERT INTO reservierungen(zeitpunkt, tischnummer, pin, storniert) VALUES (?, ?, ?, ?)"
-        parameters = (data.zeitpunkt, data.tischnummer, pin, "False")
-        cursor.execute(query, parameters)
+            con.commit()
+            con.close()
+        except sqlite3.Error as e:
+            return jsonify(e), 400
 
-        response_json = get_reservation_response(
-            con, data.zeitpunkt, data.tischnummer, pin
-        )
+        print(response_json)
+        return response_json, 200
 
-        con.commit()
-        con.close()
-    except sqlite3.Error as e:
-        return jsonify(e), 400
+    @app.route("/FreeTables", methods=["GET"])
+    def free_tables():
+        try:
+            freetables_loaded_data = FreeTablesSchema().load(request.data)
 
-    print(response_json)
-    return response_json, 200
+            freetables_request = FreeTablesRequest(**freetables_loaded_data)
 
+            con = sqlite3.connect("./DB/buchungssystem.sqlite")
 
-@app.route("/FreeTables", methods=["GET"])
-def free_tables():
-    try:
-        freetables_loaded_data = FreeTablesSchema().load(request.data)
+            cur = con.cursor()
+            query = "SELECT * FROM reservierungen WHERE zeitpunkt LIKE '?'"
 
-        freetables_request = FreeTablesRequest(**freetables_loaded_data)
+            all_bookings = cur.execute(
+                query, freetables_request.timestamp).fetchall()
+            con.close()
+        except ValidationError as e:
+            return jsonify(e.messages), 400
+        return all_bookings
 
-        con = sqlite3.connect("./DB/buchungssystem.sqlite")
+    @app.route("/Reservation", methods=["DELETE"])
+    def cancel_reservation():
+        try:
+            cancel_loaded_data = CancelSchema().load(request.data)
+            cancel_request = CancelRequest(**cancel_loaded_data)
 
-        cur = con.cursor()
-        query = "SELECT * FROM reservierungen WHERE zeitpunkt LIKE '?'"
+            reservation_number = cancel_request.reservation_number
+            print(f"resrvation_number: {reservation_number}")
+            pin = cancel_request.pin
+            print(f"PIN: {pin}")
+            con = sqlite3.connect("DB/buchungssystem.sqlite")
 
-        all_bookings = cur.execute(
-            query, freetables_request.timestamp).fetchall()
-        con.close()
-    except ValidationError as e:
-        return jsonify(e.messages), 400
-    return all_bookings
+            cursor = con.cursor()
+            query = "SELECT * FROM reservierungen WHERE reservierungsnummer = ?"
 
+            success = False
+            for row in cursor.execute(query, cancel_request.reservation_number):
+                print(row)
+                if str(row[3]) == pin:
+                    success = True
 
-@app.route("/Reservation", methods=["DELETE"])
-def cancel_reservation():
-    try:
-        cancel_loaded_data = CancelSchema().load(request.data)
-        cancel_request = CancelRequest(**cancel_loaded_data)
+            con.close()
+        except ValidationError as e:
+            return jsonify(e.messages), 400
+        if not success:
+            return (
+                jsonify(
+                    {
+                        "message": "Cancellation not successful! Reservation number or pin not correct."
+                    }
+                ),
+                400,
+            )
+        return jsonify({"message": "Cancellation successfully!"}), 201
 
-        reservation_number = cancel_request.reservation_number
-        print(f"resrvation_number: {reservation_number}")
-        pin = cancel_request.pin
-        print(f"PIN: {pin}")
-        con = sqlite3.connect("DB/buchungssystem.sqlite")
+    @app.route("/AllReservations", methods=["GET"])
+    def all_reservations():
+        try:
+            con = sqlite3.connect("DB/buchungssystem.sqlite")
 
-        cursor = con.cursor()
-        query = "SELECT * FROM reservierungen WHERE reservierungsnummer = ?"
+            cursor = con.cursor()
+            query = "SELECT * FROM reservierungen WHERE zeitpunkt > ? AND zeitpunkt < ? AND storniert=FALSE"
 
-        success = False
-        for row in cursor.execute(query, cancel_request.reservation_number):
-            print(row)
-            if str(row[3]) == pin:
-                success = True
+            parameter = get_start_end_today()
+            result = cursor.execute(query, parameter).fetchall()
 
-        con.close()
-    except ValidationError as e:
-        return jsonify(e.messages), 400
-    if not success:
-        return (
-            jsonify(
-                {
-                    "message": "Cancellation not successful! Reservation number or pin not correct."
-                }
-            ),
-            400,
-        )
-    return jsonify({"message": "Cancellation successfully!"}), 201
+            con.close()
+        except ValidationError as e:
+            return jsonify(e.messages), 400
 
-
-@app.route("/AllReservations", methods=["GET"])
-def all_reservations():
-    try:
-        con = sqlite3.connect("DB/buchungssystem.sqlite")
-
-        cursor = con.cursor()
-        query = "SELECT * FROM reservierungen WHERE zeitpunkt > ? AND zeitpunkt < ? AND storniert=FALSE"
-
-        parameter = get_start_end_today()
-        result = cursor.execute(query, parameter).fetchall()
-
-        con.close()
-    except ValidationError as e:
-        return jsonify(e.messages), 400
-
-    return result, 200
+        return result, 200
 
 
 def has_free_table(connection, zeitpunkt, tischnummer):
@@ -200,5 +188,15 @@ def get_start_end_today():
     return start, end
 
 
-init_app()
-app.run()
+def create_app():
+    app = Flask(__name__)
+    app.config["DEBUG"] = True
+
+    init_app(app)
+
+    return app
+
+
+if __name__ == "__main__":
+    app = create_app()
+    app.run()
