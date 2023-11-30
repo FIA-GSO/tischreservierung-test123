@@ -16,10 +16,10 @@
                 "type": "object",
                 "properties": {
                   "reservation_number": {
-                    "type": "int"
+                    "type": "integer"
                   },
                   "pin": {
-                    "type": "int"
+                    "type": "integer"
                   },
                   "required": [
                     "reservation_number",
@@ -81,16 +81,16 @@
                   "type": "object",
                   "properties": {
                     "pin": {
-                      "type": "int"
+                      "type": "integer"
                     },
                     "reservierungsnummer": {
-                      "type": "int"
+                      "type": "integer"
                     },
                     "storniert": {
                       "type": "bool"
                     },
                     "tischnummer": {
-                      "type": "int"
+                      "type": "integer"
                     },
                     "zeitpunkt": {
                       "type": "datetime"
@@ -117,7 +117,7 @@
                   "type": "datetime"
                 },
                 "tableNr": {
-                  "type": "int"
+                  "type": "integer"
                 },
                 "required": [
                   "timestamp"
@@ -137,16 +137,16 @@
                     "type": "object",
                     "properties": {
                       "pin": {
-                        "type": "int"
+                        "type": "integer"
                       },
                       "reservierungsnummer": {
-                        "type": "int"
+                        "type": "integer"
                       },
                       "storniert": {
                         "type": "bool"
                       },
                       "tischnummer": {
-                        "type": "int"
+                        "type": "integer"
                       },
                       "zeitpunkt": {
                         "type": "datetime"
