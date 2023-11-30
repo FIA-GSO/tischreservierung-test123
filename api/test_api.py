@@ -18,11 +18,6 @@ def test_free_tables(app):
 
     response = app.get(path = route, json = payload)
 
-    print(response.json)
-    print(response.json['bookings'])
     length = len(response.json['bookings'])
-    print(length)
-    print(response)
     assert response.status_code == 200
     assert length == 1
-
