@@ -2,7 +2,7 @@ import random
 import sqlite3
 from marshmallow import ValidationError
 from datetime import datetime, timedelta
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, render_template, request
 from cancelRequest import CancelSchema, CancelRequest
 from freeTablesRequest import FreeTablesSchema, FreeTablesRequest
 from reserveRequest import ReserveSchema
@@ -19,6 +19,12 @@ def make_key():
 
 
 def init_app(app):
+        
+    @app.route('/api/docs')
+    def get_docs():
+        print('sending docs')
+        return render_template('swaggerui.html')
+    
     @app.route("/")
     def home():
         app.send_static_file("index.html")
@@ -75,8 +81,7 @@ def init_app(app):
             cur = con.cursor()
             query = "SELECT * FROM reservierungen WHERE zeitpunkt LIKE '?'"
 
-            all_bookings = cur.execute(
-                query, freetables_request.timestamp).fetchall()
+            all_bookings = cur.execute(query, (freetables_request.timestamp)).fetchall()
             con.close()
         except ValidationError as e:
             return jsonify(e.messages), 400
@@ -199,4 +204,4 @@ def create_app():
 
 if __name__ == "__main__":
     app = create_app()
-    app.run()
+    app.run(use_reloader=True, debug=False)

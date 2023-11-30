@@ -1,0 +1,164 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "A minimal OpenAPI Description",
+    "version": "0.0.1"
+  },
+  "paths": {
+    "/Reservation": {
+      "delete": {
+        "summary": "cancel a reservation",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reservation_number": {
+                    "type": "int"
+                  },
+                  "pin": {
+                    "type": "int"
+                  },
+                  "required": [
+                    "reservation_number",
+                    "pin"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Reserve a table",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tischnummer": {
+                    "type": "string"
+                  },
+                  "zeitpunkt": {
+                    "type": "datetime"
+                  },
+                  "required": [
+                    "tischnummer",
+                    "zeitpunkt"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "pin": {
+                      "type": "int"
+                    },
+                    "reservierungsnummer": {
+                      "type": "int"
+                    },
+                    "storniert": {
+                      "type": "bool"
+                    },
+                    "tischnummer": {
+                      "type": "int"
+                    },
+                    "zeitpunkt": {
+                      "type": "datetime"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/FreeTables": {
+      "get": {
+        "summary": "check if a table is free",
+        "requestBody": null,
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "timestamp": {
+                  "type": "datetime"
+                },
+                "tableNr": {
+                  "type": "int"
+                },
+                "required": [
+                  "timestamp"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "pin": {
+                        "type": "int"
+                      },
+                      "reservierungsnummer": {
+                        "type": "int"
+                      },
+                      "storniert": {
+                        "type": "bool"
+                      },
+                      "tischnummer": {
+                        "type": "int"
+                      },
+                      "zeitpunkt": {
+                        "type": "datetime"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,232 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  background-color: rgb(220, 220, 220);
+}
+
+
+#feedback {
+  font-size: small
+}
+
+.main-nav {
+  justify-content: space-between;
+  background-color: rgb(207, 207, 207);
+  font-size: xx-large;
+  text-align: center;
+  display: flex;
+  width: 100%;
+  padding: 1rem 0 0 0;
+  align-items: baseline;
+}
+
+.leftmenu {}
+
+.midmenu {
+  display: flex;
+  width: 33%;
+  justify-content: space-between;
+}
+
+.rightmenu {
+  align-self: flex-end;
+  padding: 0rem 1rem 0rem 1rem;
+}
+
+.midmenu>a {
+  margin-right: 1.5rem;
+}
+
+.quiz {
+  text-align: center;
+  background-color: rgb(238, 238, 238);
+  border-style: none;
+  border-radius: 15px;
+  padding: 5px;
+  margin: 5px;
+}
+
+.quiz-div {
+  text-align: left;
+  border-style: none;
+  border-width: 1px;
+  margin: 2px;
+}
+
+.articleposter {
+  font-size: small;
+}
+
+.articletext {
+  margin-left: 2%;
+  margin-right: 2%;
+}
+
+a,
+h1,
+h2,
+p,
+label,
+legend {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  text-decoration: none;
+}
+
+.main-nav>a {
+  margin: 0 2rem 0 2rem;
+}
+
+p,
+label {
+  font-size: medium;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+main {
+  padding: 1rem;
+  margin-left: 25%;
+  margin-right: 25%;
+}
+
+/* unvisited link */
+a:link {
+  font-weight: bold;
+  color: rgb(0, 148, 185);
+}
+
+/* visited link */
+a:visited {
+  color: rgb(0, 148, 185);
+}
+
+/* mouse over link */
+a:hover {
+  color: rgb(57, 188, 221);
+}
+
+/* selected link */
+a:active {
+  color: rgb(57, 188, 221);
+}
+
+#feedback-form {
+  background-color: #EEE;
+  width: 100%;
+  display: inline-block;
+  align-content: center;
+  padding-top: 2em;
+  height: 40rem;
+}
+
+#feedback-form>* {
+  margin: 0.5em 25%;
+  width: 50%;
+}
+
+#feedback-form>input {
+  height: 3vh;
+}
+
+@media (max-width: 1000px) {
+  main {
+    margin: 0 10% 0 10%;
+  }
+}
+
+/* The Modal (background) */
+.modal {
+  display: none;
+  /* Hidden by default */
+  position: fixed;
+  /* Stay in place */
+  z-index: 1;
+  /* Sit on top */
+  left: auto;
+  right: 0;
+  top: 4rem;
+  width: 33%;
+  /* Full width */
+  height: 33%;
+  /* Full height */
+  overflow: auto;
+  /* Enable scroll if needed */
+  background-color: rgb(0, 0, 0);
+  /* Fallback color */
+  background-color: rgba(0, 0, 0, 0.0);
+  /* Black w/ opacity */
+  padding-top: 50px;
+}
+
+/* Modal Content/Box */
+.modal-content {
+  background-color: #c6c6c6;
+  margin: 0px;
+  border: 0px solid #888;
+  width: 100%;
+  /* Could be more or less, depending on screen size */
+}
+
+/* The Close Button */
+.close {
+  /* Position it in the top right corner outside of the modal */
+  position: absolute;
+  right: 0px;
+  top: 0;
+  color: #000;
+  font-size: 50px;
+  font-weight: bold;
+}
+
+/* Close button on hover */
+.close:hover,
+.close:focus {
+  color: red;
+  cursor: pointer;
+}
+
+/* Add Zoom Animation */
+.animate {
+  -webkit-animation: animatezoom 1.0s;
+  animation: animatezoom 1.0s
+}
+
+@-webkit-keyframes animatezoom {
+  from {
+    -webkit-transform: scale(0)
+  }
+
+  to {
+    -webkit-transform: scale(1)
+  }
+}
+
+@keyframes animatezoom {
+  from {
+    transform: scale(0)
+  }
+
+  to {
+    transform: scale(1)
+  }
+}
+
+.well {
+  background: rgb(209, 209, 209);
+}
+
+.navbar-right {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.navbar-nav{
+  font-size: larger;
+}
+
+form  { display: table; width: 100%;     }
+p     { display: table-row;  }
+label { display: table-cell; text-align: center; }
+input { display: table-cell; align-items: center; width: 80%}
+textarea { width: 80% }
