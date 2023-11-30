@@ -4,7 +4,6 @@ from marshmallow import ValidationError
 from datetime import datetime, timedelta
 from flask import Flask, jsonify, request
 from cancelRequest import CancelSchema, CancelRequest
-from freeTablesRequest import FreeTablesSchema, FreeTablesRequest
 from reserveRequest import ReserveSchema
 
 
@@ -66,21 +65,19 @@ def init_app(app):
     @app.route("/FreeTables", methods=["GET"])
     def free_tables():
         try:
-            freetables_loaded_data = FreeTablesSchema().load(request.data)
-
-            freetables_request = FreeTablesRequest(**freetables_loaded_data)
-
             con = sqlite3.connect("./DB/buchungssystem.sqlite")
-
+            con.row_factory = dict_factory
+            timestamp = request.json['timestamp']
+            dt = format_timestamp(timestamp)
+            print(dt)
             cur = con.cursor()
-            query = "SELECT * FROM reservierungen WHERE zeitpunkt LIKE '?'"
+            query = f"SELECT * FROM reservierungen WHERE zeitpunkt = '{dt}'"
 
-            all_bookings = cur.execute(
-                query, freetables_request.timestamp).fetchall()
+            all_bookings = cur.execute(query).fetchall()
             con.close()
         except ValidationError as e:
             return jsonify(e.messages), 400
-        return all_bookings
+        return jsonify(bookings = all_bookings),200
 
     @app.route("/Reservation", methods=["DELETE"])
     def cancel_reservation():
@@ -196,7 +193,21 @@ def create_app():
 
     return app
 
+def format_timestamp(timestamp) -> datetime:
+    try: 
+        time = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+
+        if time.minute > 30:
+            time = time.replace(hour=time.hour + 1,minute = 0)
+        elif time.minute != 0:
+            time = time.replace(minute = 30)
+
+    except ValueError:
+        raise("TIMESTAMP!!!!!!!!!")
+
+    return time
 
 if __name__ == "__main__":
     app = create_app()
-    app.run()
+    app.run()    
+
