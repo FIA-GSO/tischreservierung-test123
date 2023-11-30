@@ -14,9 +14,9 @@
                 type: object
                 properties:
                   reservation_number:
-                    type: int
+                    type: integer
                   pin:
-                    type: int
+                    type: integer
                   required:
                     - reservation_number
                     - pin
@@ -42,7 +42,8 @@
                   tischnummer:
                     type: string
                   zeitpunkt:
-                    type: datetime
+                    type: string
+                    format: date-time
                   required:
                     - tischnummer
                     - zeitpunkt
@@ -55,15 +56,16 @@
                   type: object
                   properties:
                     pin:
-                      type: int
+                      type: integer
                     reservierungsnummer:
-                      type: int
+                      type: integer
                     storniert:
                       type: bool
                     tischnummer:
-                      type: int
+                      type: integer
                     zeitpunkt:
-                      type: datetime
+                      type: string
+                      format: date-time
     /FreeTables:
       get:  
         summary: check if a table is free
@@ -75,9 +77,10 @@
               type: object
               properties:
                 timestamp:
-                  type: datetime
+                  type: string
+                  format: date-time
                 tableNr:
-                  type: int
+                  type: integer
                 required:
                   - timestamp
         responses:
@@ -91,12 +94,13 @@
                     type: object
                     properties:
                       pin:
-                        type: int
+                        type: integer
                       reservierungsnummer:
-                        type: int
+                        type: integer
                       storniert:
                         type: bool
                       tischnummer:
-                        type: int
+                        type: integer
                       zeitpunkt:
-                        type: datetime
+                        type: string
+                        format: date-time
